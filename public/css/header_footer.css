@@ -1,0 +1,139 @@
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #ffffff;
+}
+
+/* 1. Header / Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eaeaea;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-uc {
+    height: 30px;
+    object-fit: contain;
+}
+
+.divider {
+    color: #ccc;
+    font-size: 18px;
+}
+
+.brand-title {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: #000;
+}
+
+.navbar-center {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #4b5563;
+    font-weight: 500;
+    font-size: 15px;
+    transition: color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #C20042; /* Warna Magenta Utama */
+    font-weight: 700;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icon-link {
+    text-decoration: none;
+    color: #1f2937;
+    font-size: 18px;
+    transition: transform 0.2s;
+}
+
+.icon-link:hover {
+    transform: scale(1.1);
+    color: #C20042;
+}
+
+/* 2. Main Content Wrapper */
+.main-content {
+    flex: 1;
+}
+
+/* 3. Footer Section */
+.footer {
+    background-color: #C20042;
+    color: #ffffff;
+    padding: 30px 40px 15px;
+    margin-top: 50px;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.footer-brand {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icon {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 6px 10px;
+    border-radius: 50%;
+}
+
+.footer-line {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 15px;
+}
+
+.footer-bottom {
+    font-size: 12px;
+    color: #fbcfe8;
+}

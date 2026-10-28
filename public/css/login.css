@@ -1,0 +1,217 @@
+/* Reset Basic */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+/* Header Navbar */
+.navbar {
+    background-color: #ffffff;
+    padding: 12px 30px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-uc {
+    height: 32px;
+    object-fit: contain;
+}
+
+.divider {
+    color: #d1d5db;
+    font-size: 20px;
+}
+
+.brand-title {
+    font-weight: bold;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: #000000;
+}
+
+/* Main Container Flexbox Layout */
+.main-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+/* Kiri: Banner Section */
+.banner-section {
+    flex: 1;
+    background-color: #111827;
+    display: none; /* Default tersembunyi di layar kecil/HP */
+}
+
+.banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Kanan: Form Section */
+.form-section {
+    flex: 1;
+    background: linear-gradient(to right, #fdf2f8, #fce7f3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+/* Card Form Login */
+.login-card {
+    background-color: #ffffff;
+    border-radius: 24px;
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.login-card h2 {
+    text-align: center;
+    font-size: 28px;
+    color: #1f2937;
+    margin-bottom: 30px;
+    font-weight: 800;
+}
+
+/* Alert Error */
+.alert-error {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 20px;
+    border: 1px solid #fca5a5;
+}
+
+/* Form Custom Inputs */
+.input-group {
+    position: relative;
+    border-bottom: 2px solid #111827;
+    margin-bottom: 24px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px 35px 10px 5px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 15px;
+    color: #374151;
+}
+
+.input-group .icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #111827;
+}
+
+.toggle-pwd {
+    cursor: pointer;
+}
+
+.forgot-wrapper {
+    text-align: right;
+    margin-top: -12px;
+    margin-bottom: 25px;
+}
+
+.forgot-link {
+    font-size: 12px;
+    color: #9ca3af;
+    text-decoration: none;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* Tombol Log In Magenta */
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background-color: #C20042;
+    color: #ffffff;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-login:hover {
+    background-color: #a00037;
+}
+
+/* Link Register */
+.register-text {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 25px;
+}
+
+.register-link {
+    color: #C20042;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.register-link:hover {
+    text-decoration: underline;
+}
+
+/* Footer Section */
+.footer {
+    background-color: #C20042;
+    color: #ffffff;
+    padding: 20px 30px;
+}
+
+.footer-title {
+    font-weight: bold;
+    font-size: 18px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.footer-line {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    margin-bottom: 12px;
+}
+
+.footer-copy {
+    font-size: 12px;
+    color: #fbcfe8;
+}
+
+/* Responsive CSS untuk Layar Laptop/Dekstop */
+@media (min-width: 768px) {
+    .banner-section {
+        display: block; /* Munculkan gambar di layar besar */
+    }
+}

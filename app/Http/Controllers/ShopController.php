@@ -39,13 +39,13 @@ class ShopController extends Controller
         $categories = Category::all(); // Menggunakan model Category
         $brands = User::where('USERS_ROLE', 'S')->get();
 
-        return view('shop', compact('products', 'categories', 'brands'));
+        return view('customer.shop', compact('products', 'categories', 'brands'));
     }
 
     public function show($id)
     {
         $product = Product::with(['category', 'user'])->find($id);
 
-        return view('shop_detail', compact('product'));
+        return view('customer.shop_detail', compact('product'));
     }
 }

@@ -20,6 +20,10 @@ return new class extends Migration
             $table->decimal('USERS_HIP', 8, 2)->nullable();
             $table->decimal('USERS_HEIGHT', 8, 2)->nullable();
             $table->decimal('USERS_WEIGHT', 8, 2)->nullable();
+            // Seller profile
+            $table->string('USERS_INSTAGRAM', 50)->nullable();
+            $table->text('USERS_ADDRESS')->nullable();               // alamat toko offline
+            $table->string('USERS_PROFILE_PICTURE', 255)->nullable();
             $table->boolean('USERS_STATUS_DEL')->default(false);
             $table->timestamps();
         });

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - MADE BY PIDIZ</title>
+    <title>Log In - MADE BY PIDIZ</title>
     <!-- Google Font: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,7 +82,7 @@
 
         .auth-right {
             flex: 1;
-            /* Gradasi pink disamakan persis dengan halaman Login */
+            /* Background Gradasi Pink Khas Mockup */
             background: linear-gradient(135deg, #ffffff 40%, #fbcfe8 100%);
             display: flex;
             justify-content: center;
@@ -91,34 +91,35 @@
             height: 100%;
         }
 
-        /* 3. Register Card & Form */
-        .register-card {
+        /* 3. Login Card & Form */
+        .login-card {
             background: #ffffff;
             width: 100%;
             max-width: 390px;
-            padding: 32px 30px 25px;
+            padding: 35px 32px 30px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
             text-align: center;
         }
 
-        .register-card h2 {
+        .login-card h2 {
             font-size: 24px;
             font-weight: 800;
             color: #1e293b;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             text-align: left;
+            position: relative;
         }
 
         .form-control {
             width: 100%;
             border: none;
             border-bottom: 1px solid #475569;
-            padding: 6px 0;
+            padding: 6px 25px 6px 0;
             outline: none;
             font-size: 13.5px;
             color: #1e293b;
@@ -135,8 +136,34 @@
             border-bottom-color: #C20042;
         }
 
-        /* Button Register (Sama persis dengan Login) */
-        .btn-register {
+        .field-icon {
+            position: absolute;
+            right: 0;
+            bottom: 8px;
+            color: #64748b;
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: -8px;
+            margin-bottom: 22px;
+        }
+
+        .forgot-password a {
+            font-size: 11.5px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .forgot-password a:hover {
+            color: #C20042;
+        }
+
+        /* Button Login */
+        .btn-login {
             width: 100%;
             background-color: #C20042;
             color: white;
@@ -146,25 +173,24 @@
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 18px;
             transition: background 0.2s, transform 0.1s;
         }
 
-        .btn-register:hover {
+        .btn-login:hover {
             background-color: #9e0035;
         }
 
-        .btn-register:active {
+        .btn-login:active {
             transform: scale(0.99);
         }
 
-        .login-link {
-            margin-top: 18px;
+        .register-link {
+            margin-top: 22px;
             font-size: 12.5px;
             color: #64748b;
         }
 
-        .login-link a {
+        .register-link a {
             color: #C20042;
             font-weight: 700;
             text-decoration: underline;
@@ -221,7 +247,7 @@
                 padding: 40px 20px;
             }
 
-            .register-card {
+            .login-card {
                 max-width: 100%;
             }
         }
@@ -242,36 +268,42 @@
     <div class="auth-container">
         <!-- Banner Kiri -->
         <div class="auth-left">
-            <img src="{{ asset('images/Background_Login.png') }}" alt="Register Fabric Banner"
+            <img src="{{ asset('images/Background_Login.png') }}" alt="Login Fabric Banner"
                 onerror="this.src='https://via.placeholder.com/600x800?text=Fashion+Fabric+Image'">
         </div>
 
         <!-- Form Kanan -->
         <div class="auth-right">
-            <div class="register-card">
-                <h2>Register Here</h2>
+            <div class="login-card">
+                <h2>Log In</h2>
 
-                <form action="{{ route('register.process') }}" method="POST">
+                <form action="{{ route('login.process') }}" method="POST">
                     @csrf
+
+                    {{-- Tampilkan Error jika Gagal Login --}}
+                    @if ($errors->any())
+                        <div class="alert-error" style="color: red; font-size: 12px; margin-bottom: 15px;">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
                     <div class="form-group">
                         <input type="text" name="username" class="form-control" placeholder="Username" required
                             autocomplete="off">
+                        <span class="field-icon">&#9993;</span>
                     </div>
                     <div class="form-group">
                         <input type="password" name="password" class="form-control" placeholder="Password" required>
+                        <span class="field-icon">&#128065;</span>
                     </div>
-                    <div class="form-group">
-                        <input type="text" name="role" class="form-control" placeholder="Role (C / S / A)"
-                            required maxlength="1">
+                    <div class="forgot-password">
+                        <a href="#">Forgot password?</a>
                     </div>
-                    <div class="form-group">
-                        <input type="text" name="phone" class="form-control" placeholder="Phone Number" required>
-                    </div>
-                    <button type="submit" class="btn-register">Register</button>
+                    <button type="submit" class="btn-login">Log In</button>
                 </form>
 
-                <div class="login-link">
-                    Already have an account? <a href="{{ route('login') }}">Login</a>
+                <div class="register-link">
+                    Don't have an account yet? <a href="{{ route('register') }}">Register here</a>
                 </div>
             </div>
         </div>

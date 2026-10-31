@@ -3,87 +3,83 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // Tampilkan halaman Register
     public function showRegister()
     {
-        return view('register');
+        return view('auth.register');
     }
 
-    // Proses Register
     public function register(Request $request)
     {
+        // Validasi input termasuk format nomor telepon Indonesia (08 atau +62)
         $request->validate([
-            'username' => 'required|string|max:50',
-            'password' => 'required|string|min:6',
-            'role'     => 'required|string|size:1',
-            'phone'    => 'nullable|string|max:15',
+            'username' => 'required|string|max:255|unique:users,USERS_NAME',
+            'password' => 'required|min:6',
+            'role' => 'required|in:C,S',
+            'phone_number' => ['required', 'regex:/^(\+62|08)[0-9]{8,11}$/'],
+        ], [
+            'phone_number.regex' => 'Format nomor telepon harus valid berawalan 08 atau +62 (10-13 digit).'
         ]);
 
-        // Auto-generate USERS_ID (Contoh: U0001, U0002, dst)
-        $lastUser = DB::table('users')->orderBy('USERS_ID', 'desc')->first();
-        if ($lastUser) {
-            $numericId = (int) substr($lastUser->USERS_ID, 1) + 1;
-            $userId = 'U' . str_pad($numericId, 4, '0', STR_PAD_LEFT);
-        } else {
-            $userId = 'U0001';
-        }
-
-        // Insert ke database sesuai struktur tabel
+        // Simpan ke database sesuai struktur tabel user
         DB::table('users')->insert([
-            'USERS_ID'           => $userId,
-            'USERS_NAME'         => $request->username,
-            'USERS_PASSWORD'     => Hash::make($request->password), // Enkripsi password aman
-            'USERS_ROLE'         => strtoupper($request->role),     // Contoh: 'C' (Customer), 'S' (Seller), 'A' (Admin)
-            'USERS_PHONE_NUMBER' => $request->phone,
-            'USERS_STATUS_DEL'   => 0,
-            'created_at'         => now(),
-            'updated_at'         => now(),
+            'USERS_ID' => 'U' . rand(1000, 9999),
+            'USERS_NAME' => $request->username,
+            'USERS_PASSWORD' => Hash::make($request->password),
+            'USERS_ROLE' => $request->role,
+            'USERS_PHONE_NUMBER' => $request->phone_number,
+            'USERS_STATUS_DEL' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 
-    // Tampilkan halaman Login
     public function showLogin()
     {
-        return view('login');
+        return view('auth.login');
     }
 
-    // Proses Login
     public function login(Request $request)
     {
         $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'username' => 'required',
+            'password' => 'required',
         ]);
 
-        // Cari user berdasarkan USERS_NAME
+        // Cari user di database berdasarkan username
         $user = DB::table('users')->where('USERS_NAME', $request->username)->first();
 
-        // Verifikasi password
         if ($user && Hash::check($request->password, $user->USERS_PASSWORD)) {
-            // Simpan session login
-            Session::put('user_id', $user->USERS_ID);
-            Session::put('user_name', $user->USERS_NAME);
-            Session::put('user_role', $user->USERS_ROLE);
+            
+            // Simpan session user
+            session([
+                'user_id' => $user->USERS_ID,
+                'user_name' => $user->USERS_NAME,
+                'user_role' => $user->USERS_ROLE
+            ]);
 
-            // Redirect langsung ke Home Customer
-            return redirect()->route('home');
+            // SMART ROUTING BERDASARKAN ROLE
+            if ($user->USERS_ROLE === 'S') {
+                return redirect()->route('seller.dashboard'); // Masuk ke Seller Center
+            } elseif ($user->USERS_ROLE === 'A') {
+                return redirect()->route('admin.dashboard'); // Masuk ke Admin Panel (kalau ada)
+            } else {
+                return redirect()->route('home'); // Masuk ke Katalog Customer
+            }
         }
 
-        return back()->withErrors(['error' => 'Username atau Password salah!']);
+        return back()->withErrors(['error' => 'Username atau password salah!'])->withInput();
     }
 
-    // Logout
-    public function logout()
+    public function logout(Request $request)
     {
-        Session::flush();
+        $request->session()->flush();
         return redirect()->route('login');
     }
 }

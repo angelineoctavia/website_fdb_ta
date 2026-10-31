@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In - MADE BY PIDIZ</title>
+    <title>Register - MADE BY PIDIZ</title>
     <!-- Google Font: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,7 +82,7 @@
 
         .auth-right {
             flex: 1;
-            /* Background Gradasi Pink Khas Mockup */
+            /* Gradasi pink disamakan persis dengan halaman Login */
             background: linear-gradient(135deg, #ffffff 40%, #fbcfe8 100%);
             display: flex;
             justify-content: center;
@@ -91,35 +91,34 @@
             height: 100%;
         }
 
-        /* 3. Login Card & Form */
-        .login-card {
+        /* 3. Register Card & Form */
+        .register-card {
             background: #ffffff;
             width: 100%;
             max-width: 390px;
-            padding: 35px 32px 30px;
+            padding: 32px 30px 25px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
             text-align: center;
         }
 
-        .login-card h2 {
+        .register-card h2 {
             font-size: 24px;
             font-weight: 800;
             color: #1e293b;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             text-align: left;
-            position: relative;
         }
 
         .form-control {
             width: 100%;
             border: none;
             border-bottom: 1px solid #475569;
-            padding: 6px 25px 6px 0;
+            padding: 6px 0;
             outline: none;
             font-size: 13.5px;
             color: #1e293b;
@@ -136,34 +135,8 @@
             border-bottom-color: #C20042;
         }
 
-        .field-icon {
-            position: absolute;
-            right: 0;
-            bottom: 8px;
-            color: #64748b;
-            font-size: 13px;
-            pointer-events: none;
-        }
-
-        .forgot-password {
-            text-align: right;
-            margin-top: -8px;
-            margin-bottom: 22px;
-        }
-
-        .forgot-password a {
-            font-size: 11.5px;
-            color: #94a3b8;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .forgot-password a:hover {
-            color: #C20042;
-        }
-
-        /* Button Login */
-        .btn-login {
+        /* Button Register (Sama persis dengan Login) */
+        .btn-register {
             width: 100%;
             background-color: #C20042;
             color: white;
@@ -173,24 +146,25 @@
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
+            margin-top: 18px;
             transition: background 0.2s, transform 0.1s;
         }
 
-        .btn-login:hover {
+        .btn-register:hover {
             background-color: #9e0035;
         }
 
-        .btn-login:active {
+        .btn-register:active {
             transform: scale(0.99);
         }
 
-        .register-link {
-            margin-top: 22px;
+        .login-link {
+            margin-top: 18px;
             font-size: 12.5px;
             color: #64748b;
         }
 
-        .register-link a {
+        .login-link a {
             color: #C20042;
             font-weight: 700;
             text-decoration: underline;
@@ -247,7 +221,7 @@
                 padding: 40px 20px;
             }
 
-            .login-card {
+            .register-card {
                 max-width: 100%;
             }
         }
@@ -261,52 +235,88 @@
         <img src="{{ asset('images/UC_LOGO_WARNA.png') }}" alt="UC Logo"
             onerror="this.src='https://via.placeholder.com/120x30?text=UC+Logo'">
         <span class="divider">|</span>
-        <span class="brand">MADE BVY PIDIZ</span>
+        <span class="brand">MADE BY PIDIZ</span>
     </div>
 
     <!-- Main Section -->
     <div class="auth-container">
         <!-- Banner Kiri -->
         <div class="auth-left">
-            <img src="{{ asset('images/Background_Login.png') }}" alt="Login Fabric Banner"
+            <img src="{{ asset('images/Background_Login.png') }}" alt="Register Fabric Banner"
                 onerror="this.src='https://via.placeholder.com/600x800?text=Fashion+Fabric+Image'">
         </div>
 
         <!-- Form Kanan -->
+        <!-- Form Kanan -->
         <div class="auth-right">
-            <div class="login-card">
-                <h2>Log In</h2>
+            <div class="register-card">
+                <h2>Register Here</h2>
 
-                <form action="{{ route('login.process') }}" method="POST">
+                @if ($errors->any())
+                    <div
+                        style="background: #fee2e2; color: #991b1b; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 12px; text-align: left;">
+                        @foreach ($errors->all() as $error)
+                            <div>{{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
+
+                <form action="{{ route('register.process') }}" method="POST">
                     @csrf
+                    <div class="form-group">
+                        <input type="text" name="username" class="form-control" placeholder="Username"
+                            value="{{ old('username') }}" required autocomplete="off">
+                    </div>
 
-                    {{-- Tampilkan Error jika Gagal Login --}}
-                    @if ($errors->any())
-                        <div class="alert-error" style="color: red; font-size: 12px; margin-bottom: 15px;">
-                            {{ $errors->first() }}
-                        </div>
-                    @endif
+                    <!-- Password dengan Icon Mata -->
+                    <div class="form-group" style="position: relative;">
+                        <input type="password" name="password" id="passwordField" class="form-control"
+                            placeholder="Password" required style="padding-right: 35px;">
+                        <i class="fa-solid fa-eye" id="togglePassword" onclick="togglePasswordVisibility()"
+                            style="position: absolute; right: 0; bottom: 8px; cursor: pointer; color: #94a3b8; font-size: 14px;"></i>
+                    </div>
+
+                    <!-- Dropdown Role (Customer / Seller) -->
+                    <div class="form-group">
+                        <select name="role" class="form-control" required style="cursor: pointer;">
+                            <option value="" disabled selected style="color: #94a3b8;">Select Role (Customer /
+                                Seller)</option>
+                            <option value="C">Customer</option>
+                            <option value="S">Seller</option>
+                        </select>
+                    </div>
 
                     <div class="form-group">
-                        <input type="text" name="username" class="form-control" placeholder="Username" required
-                            autocomplete="off">
-                        <span class="field-icon">&#9993;</span>
+                        <input type="text" name="phone_number" class="form-control"
+                            placeholder="Phone Number (08xx / +62)" value="{{ old('phone_number') }}" required>
                     </div>
-                    <div class="form-group">
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
-                        <span class="field-icon">&#128065;</span>
-                    </div>
-                    <div class="forgot-password">
-                        <a href="#">Forgot password?</a>
-                    </div>
-                    <button type="submit" class="btn-login">Log In</button>
+
+                    <button type="submit" class="btn-register">Register</button>
                 </form>
 
-                <div class="register-link">
-                    Don't have an account yet? <a href="{{ route('register') }}">Register here</a>
+                <div class="login-link">
+                    Already have an account? <a href="{{ route('login') }}">Login</a>
                 </div>
             </div>
         </div>
+
+        <!-- Script Toggle Password & FontAwesome CDN -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script>
+            function togglePasswordVisibility() {
+                const pwd = document.getElementById('passwordField');
+                const icon = document.getElementById('togglePassword');
+                if (pwd.type === 'password') {
+                    pwd.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    pwd.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        </script>
     </div>
 
     <!-- Footer Compact -->

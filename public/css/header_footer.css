@@ -1,9 +1,8 @@
-/* Reset CSS */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
 body {
@@ -137,3 +136,17 @@ body {
     font-size: 12px;
     color: #fbcfe8;
 }
+
+/* tambahkan di paling bawah file */
+.icon-link.active { color: #C20042; }
+
+.social-icon {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 16px;
+}
+.social-icon:hover { background: rgba(255, 255, 255, 0.15); }

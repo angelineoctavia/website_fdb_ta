@@ -208,7 +208,11 @@
 </head>
 
 <body>
-    @include('components.seller_header')
+    @hasSection('header')
+        @yield('header')
+    @else
+        @include('components.seller_header')
+    @endif
 
     <main>
         @yield('content')

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SellerController;
+use App\Http\Controllers\AdminController;
 
 // 1. Akses awal langsung diarahkan ke Register
 Route::get('/', function () {
@@ -53,9 +54,24 @@ Route::middleware(['web'])->prefix('seller')->group(function () {
     Route::post('/upload', [SellerController::class, 'uploadStore'])->name('seller.upload.process');
 
     Route::get('/orders', [SellerController::class, 'orders'])->name('seller.orders');
-    Route::get('/orders/{id}', [SellerController::class, 'orderShow'])->name('seller.orders.show');
+    Route::get('/orders/{id}', [SellerController::class, 'orderShow'])->name('seller.orders.show');   // BARU: View Details
     Route::patch('/orders/{id}', [SellerController::class, 'orderUpdateStatus'])->name('seller.orders.update');
 
     Route::get('/profile', [SellerController::class, 'profile'])->name('seller.profile');
     Route::post('/profile', [SellerController::class, 'profileUpdate'])->name('seller.profile.update');
+});
+
+// 5. Admin Center Routes
+Route::middleware(['web'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/report', [AdminController::class, 'report'])->name('admin.report');   // download XLSX
+
+    Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+    Route::get('/orders/{id}', [AdminController::class, 'orderShow'])->name('admin.orders.show');
+
+    Route::post('/categories', [AdminController::class, 'categoryStore'])->name('admin.categories.store');
+    Route::patch('/categories/{id}', [AdminController::class, 'categoryUpdate'])->name('admin.categories.update');
+    Route::delete('/categories/{id}', [AdminController::class, 'categoryDestroy'])->name('admin.categories.destroy');
+
+    Route::get('/profile', [AdminController::class, 'profile'])->name('admin.profile');
 });

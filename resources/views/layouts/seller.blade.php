@@ -160,23 +160,25 @@
         .sf {
             background: var(--dark);
             color: #fff;
-            padding: 32px 48px 26px;
+            padding: 12px 36px;
             margin-top: 40px
         }
 
         .sf-title {
             font-weight: 600;
-            font-size: 22px
+            font-size: 17px;
+            line-height: 1.2
         }
 
         .sf hr {
             border: 0;
             border-top: 1px solid rgba(255, 255, 255, .45);
-            margin: 14px 0 12px
+            margin: 6px 0
         }
 
         .sf-copy {
             font-size: 13px;
+            line-height: 1.2;
             color: rgba(255, 255, 255, .9)
         }
 
@@ -200,7 +202,7 @@
             }
 
             .sf {
-                padding: 20px
+                padding: 12px 16px
             }
         }
     </style>

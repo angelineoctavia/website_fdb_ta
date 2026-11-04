@@ -1,258 +1,291 @@
 @extends('layouts.app')
-@section('title', 'Shop - MADE BY PIDIZ')
+
+@section('title', 'Shop')
 
 @push('styles')
+    @include('components.ui_styles')
     <style>
-        .shop-wrapper {
+        .shop-layout {
             display: flex;
-            min-height: 80vh;
-            background-color: #f9fafb;
+            align-items: stretch;
+            min-height: 560px
         }
 
-        .filter-sidebar {
-            width: 280px;
-            background-color: #1f2937;
-            color: #ffffff;
-            padding: 30px 20px;
+        .filter-panel {
+            width: 230px;
             flex-shrink: 0;
+            background: var(--dark);
+            color: #fff;
+            padding: 26px 22px
         }
 
-        .filter-sidebar h2 {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 25px;
-            text-transform: uppercase;
+        .filter-panel h2 {
+            font-size: 15px;
+            letter-spacing: .5px;
+            margin-bottom: 18px
         }
 
         .filter-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px
         }
 
-        .filter-group label {
+        .filter-title {
             display: block;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 8px
         }
 
         .filter-select {
             width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #4b5563;
-            background-color: #374151;
-            color: #ffffff;
-            font-size: 14px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 0;
+            background: #d9d9d9;
+            font-size: 12px
         }
 
-        .filter-checkbox-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            font-size: 14px;
-            color: #d1d5db;
-        }
-
-        .filter-checkbox-list label {
+        .filter-check {
             display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
-            font-weight: normal;
+            font-size: 12px;
+            margin-bottom: 6px;
+            cursor: pointer
         }
 
-        .btn-clear-filter {
-            width: 100%;
-            background-color: #dc2626;
-            color: #ffffff;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-            display: block;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        .btn-clear-filter:hover {
-            background-color: #b91c1c;
+        .filter-check input {
+            accent-color: var(--brand)
         }
 
         .shop-content {
-            flex-grow: 1;
-            padding: 40px;
+            flex: 1;
+            padding: 28px 36px;
+            background: #fafafa
         }
 
-        .products-grid-shop {
+        .search-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 16px
+        }
+
+        .search-info a {
+            color: var(--brand);
+            font-weight: 600
+        }
+
+        .product-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
+            gap: 22px
         }
 
         .product-card {
-            background: #ffffff;
-            border-radius: 8px;
+            background: #fff;
+            box-shadow: var(--shadow-card);
+            border-radius: 4px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
-            transition: transform 0.2s;
             display: flex;
             flex-direction: column;
-            text-decoration: none;
-            color: inherit;
+            transition: transform .15s;
         }
 
         .product-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-3px)
         }
 
-        .product-img-box {
-            width: 100%;
+        .product-thumb {
+            position: relative;
             aspect-ratio: 3 / 4;
-            background-color: #e5e7eb;
-            overflow: hidden;
+            background: #e6e6e6;
+            overflow: hidden
         }
 
-        .product-img-box img {
+        .product-thumb img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover
         }
 
         .product-info {
-            padding: 15px;
+            padding: 8px 10px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 11px
         }
 
         .product-name {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 5px;
+            font-weight: 500
         }
 
         .product-price {
-            font-size: 14px;
-            color: #4b5563;
-            font-weight: 500;
+            color: var(--muted)
         }
 
-        @media (max-width: 1024px) {
-            .products-grid-shop {
-                grid-template-columns: repeat(2, 1fr);
+        .pager {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            margin-top: 28px;
+            font-size: 13px
+        }
+
+        .pager a {
+            color: var(--brand);
+            font-weight: 600
+        }
+
+        .pager .disabled {
+            color: #bbb
+        }
+
+        @media (max-width: 1100px) {
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr)
+            }
+        }
+
+        @media (max-width: 900px) {
+            .shop-layout {
+                flex-direction: column
+            }
+
+            .filter-panel {
+                width: 100%
+            }
+
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .shop-content {
+                padding: 18px
             }
         }
     </style>
 @endpush
 
 @section('content')
-    <div class="shop-wrapper">
-        <aside class="filter-sidebar">
-            <h2>Filters</h2>
-            <form action="{{ route('shop.index') }}" method="GET" id="filterForm">
+    <div class="shop-layout">
+
+        {{-- ===== SIDEBAR FILTER ===== --}}
+        <aside class="filter-panel">
+            <h2>FILTERS</h2>
+
+            <form method="GET" action="{{ route('shop.index') }}" id="filter-form">
+                @if ($q !== '')
+                    <input type="hidden" name="q" value="{{ $q }}">
+                @endif
+
                 <div class="filter-group">
-                    <label for="brand">Brands</label>
+                    <label class="filter-title" for="brand">Brands</label>
                     <select name="brand" id="brand" class="filter-select" onchange="this.form.submit()">
-                        <option value="">All Brands</option>
+                        <option value="">Semua Brand</option>
                         @foreach ($brands as $b)
-                            <option value="{{ $b->USERS_ID }}" {{ request('brand') == $b->USERS_ID ? 'selected' : '' }}>
-                                {{ $b->USERS_NAME }}</option>
+                            <option value="{{ $b->USERS_ID }}" @selected($selected['brand'] == $b->USERS_ID)>{{ $b->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="filter-group">
-                    <label>Gender</label>
-                    <div class="filter-checkbox-list">
-                        <label><input type="radio" name="gender" value="Women"
-                                {{ request('gender') == 'Women' ? 'checked' : '' }} onchange="this.form.submit()">
-                            Women</label>
-                        <label><input type="radio" name="gender" value="Men"
-                                {{ request('gender') == 'Men' ? 'checked' : '' }} onchange="this.form.submit()"> Men</label>
-                        <label><input type="radio" name="gender" value="Unisex"
-                                {{ request('gender') == 'Unisex' ? 'checked' : '' }} onchange="this.form.submit()">
-                            Unisex</label>
-                    </div>
+                    <span class="filter-title">Gender</span>
+                    @foreach ($genderOptions as $value => $label)
+                        <label class="filter-check">
+                            <input type="checkbox" name="gender[]" value="{{ $value }}" @checked(in_array($value, $selected['gender']))
+                                onchange="this.form.submit()">
+                            {{ $label }}
+                        </label>
+                    @endforeach
                 </div>
 
                 <div class="filter-group">
-                    <label>Type</label>
-                    <div class="filter-checkbox-list">
-                        @foreach ($categories as $cat)
-                            <label>
-                                <input type="checkbox" name="type[]" value="{{ $cat->CATEGORIES_ID }}"
-                                    {{ is_array(request('type')) && in_array($cat->CATEGORIES_ID, request('type')) ? 'checked' : '' }}
-                                    onchange="this.form.submit()"> {{ $cat->CATEGORIES_NAME }}
-                            </label>
-                        @endforeach
-                    </div>
+                    <span class="filter-title">Type</span>
+                    @foreach ($categoryList as $c)
+                        <label class="filter-check">
+                            <input type="checkbox" name="type[]" value="{{ $c->CATEGORIES_ID }}"
+                                @checked(in_array($c->CATEGORIES_ID, $selected['type'])) onchange="this.form.submit()">
+                            {{ $c->name }}
+                        </label>
+                    @endforeach
                 </div>
 
                 <div class="filter-group">
-                    <label>Price</label>
-                    <div class="filter-checkbox-list">
-                        <label><input type="radio" name="price" value="lt_200k"
-                                {{ request('price') == 'lt_200k' ? 'checked' : '' }} onchange="this.form.submit()"> &lt; Rp
-                            200.000</label>
-                        <label><input type="radio" name="price" value="200k_500k"
-                                {{ request('price') == '200k_500k' ? 'checked' : '' }} onchange="this.form.submit()"> Rp
-                            200.000 - Rp 500.000</label>
-                        <label><input type="radio" name="price" value="500k_1m"
-                                {{ request('price') == '500k_1m' ? 'checked' : '' }} onchange="this.form.submit()"> Rp
-                            500.000 - Rp 1.000.000</label>
-                        <label><input type="radio" name="price" value="gt_1m"
-                                {{ request('price') == 'gt_1m' ? 'checked' : '' }} onchange="this.form.submit()"> &gt; Rp
-                            1.000.000</label>
-                    </div>
+                    <span class="filter-title">Price</span>
+                    @foreach ($priceOptions as $value => $label)
+                        <label class="filter-check">
+                            <input type="checkbox" name="price[]" value="{{ $value }}" @checked(in_array($value, $selected['price']))
+                                onchange="this.form.submit()">
+                            {{ $label }}
+                        </label>
+                    @endforeach
                 </div>
 
-                <a href="{{ route('shop.index') }}" class="btn-clear-filter">Clear Filter</a>
+                <a href="{{ route('shop.index') }}" class="btn btn-red btn-block">Clear Filter</a>
             </form>
         </aside>
 
-        <main class="shop-content">
-            <div class="products-grid-shop">
-                @forelse($products as $product)
-                    <!-- Mengarah ke halaman detail produk dinamis berdasarkan ID -->
-                    <a href="{{ route('shop.detail', $product->PRODUCTS_ID) }}" class="product-card">
-                        <div class="product-img-box">
-                            <img src="{{ asset('images/Mockup_Pics/' . ($product->product_image ?? 'Trascend.jpg')) }}"
-                                alt="{{ $product->product_name }}">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">{{ $product->product_name }}</div>
-                            <div class="product-price">Rp {{ number_format($product->product_price, 0, ',', '.') }}</div>
-                        </div>
-                    </a>
-                @empty
-                    <!-- Fallback Data Mockup Visual Sesuai Request[cite: 8, 9] -->
-                    @php
-                        $mockups = [
-                            ['id' => 1, 'name' => 'Trascend', 'price' => 850000, 'img' => 'Trascend.jpg'],
-                            ['id' => 2, 'name' => 'Denim', 'price' => 360000, 'img' => 'Denim.jpg'],
-                            ['id' => 3, 'name' => 'Demi Couture', 'price' => 980000, 'img' => 'Demi_Couture.jpg'],
-                            ['id' => 4, 'name' => 'ABC', 'price' => 340000, 'img' => 'ABC.jpg'],
-                            ['id' => 5, 'name' => 'Wastra', 'price' => 480000, 'img' => 'Wastra.jpg'],
-                            ['id' => 6, 'name' => 'Hourbound', 'price' => 300000, 'img' => 'Hourbound.jpg'],
-                            ['id' => 7, 'name' => 'Spera', 'price' => 275000, 'img' => 'Spera.jpg'],
-                            ['id' => 8, 'name' => 'Myth of Men', 'price' => 600000, 'img' => 'Myth_Of_Men.jpg'],
-                        ];
-                    @endphp
+        {{-- ===== GRID PRODUK ===== --}}
+        <section class="shop-content">
+            @include('components.flash')
 
-                    @foreach ($mockups as $m)
-                        <a href="{{ route('shop.detail', $m['id']) }}" class="product-card">
-                            <div class="product-img-box">
-                                <img src="{{ asset('images/Mockup_Pics/' . $m['img']) }}" alt="{{ $m['name'] }}">
+            @if ($q !== '')
+                <div class="search-info">
+                    <span>Hasil pencarian untuk <strong>"{{ $q }}"</strong> ({{ $products->total() }}
+                        produk)</span>
+                    <a href="{{ route('shop.index') }}">Hapus pencarian</a>
+                </div>
+            @endif
+
+            @if ($products->isEmpty())
+                <div class="empty-state">
+                    <p>Belum ada produk yang cocok.</p>
+                    <a href="{{ route('shop.index') }}" class="btn btn-red">Reset</a>
+                </div>
+            @else
+                <div class="product-grid">
+                    @foreach ($products as $p)
+                        <a href="{{ route('shop.show', $p->PRODUCTS_ID) }}" class="product-card">
+                            <div class="product-thumb">
+                                @if ($p->cover_url)
+                                    <img src="{{ $p->cover_url }}" alt="{{ $p->PRODUCTS_NAME }}" loading="lazy">
+                                @else
+                                    <div class="img-placeholder">No Image</div>
+                                @endif
+                                @if ($p->is_preorder)
+                                    <span class="badge-preorder">Pre-Order</span>
+                                @endif
                             </div>
                             <div class="product-info">
-                                <div class="product-name">{{ $m['name'] }}</div>
-                                <div class="product-price">Rp {{ number_format($m['price'], 0, ',', '.') }}</div>
+                                <span class="product-name">{{ $p->PRODUCTS_NAME }}</span>
+                                <span class="product-price">{{ $p->formatted_price }}</span>
                             </div>
                         </a>
                     @endforeach
-                @endforelse
-            </div>
-        </main>
+                </div>
+
+                @if ($products->hasPages())
+                    <div class="pager">
+                        @if ($products->onFirstPage())
+                            <span class="disabled">&laquo; Prev</span>
+                        @else
+                            <a href="{{ $products->previousPageUrl() }}">&laquo; Prev</a>
+                        @endif
+
+                        <span>{{ $products->currentPage() }} / {{ $products->lastPage() }}</span>
+
+                        @if ($products->hasMorePages())
+                            <a href="{{ $products->nextPageUrl() }}">Next &raquo;</a>
+                        @else
+                            <span class="disabled">Next &raquo;</span>
+                        @endif
+                    </div>
+                @endif
+            @endif
+        </section>
     </div>
 @endsection

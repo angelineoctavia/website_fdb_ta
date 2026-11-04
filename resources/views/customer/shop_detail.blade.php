@@ -1,396 +1,427 @@
 @extends('layouts.app')
-@section('title', 'Product Detail - MADE BY PIDIZ')
+
+@section('title', $product->PRODUCTS_NAME)
 
 @push('styles')
+    @include('components.ui_styles')
     <style>
-        .detail-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
+        .detail-page {
+            padding: 24px 40px 48px;
+            background: #f5f5f5
         }
 
         .back-link {
             display: inline-block;
-            margin-bottom: 20px;
-            font-weight: 600;
-            color: #374151;
-            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 14px
         }
 
         .back-link:hover {
-            color: #C20042;
+            color: var(--brand)
         }
 
         .detail-layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-        }
-
-        /* Left Main Box */
-        .product-main-box {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             display: flex;
-            gap: 30px;
+            gap: 28px;
+            align-items: flex-start
         }
 
-        .product-gallery {
-            width: 50%;
+        .detail-card {
+            flex: 1;
+            display: flex;
+            gap: 28px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: var(--shadow-card);
+            padding: 26px;
         }
 
-        .main-img-preview {
-            width: 100%;
+        .detail-gallery {
+            width: 300px;
+            flex-shrink: 0
+        }
+
+        .gallery-main {
             aspect-ratio: 3 / 4;
-            background: #d1d5db;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-
-        .main-img-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .thumbnail-list {
-            display: flex;
-            gap: 10px;
-        }
-
-        .thumb-box {
-            width: calc(25% - 7.5px);
-            aspect-ratio: 1;
-            background: #d1d5db;
+            background: #d9d9d9;
             border-radius: 6px;
-            cursor: pointer;
-            overflow: hidden;
+            overflow: hidden
         }
 
-        .thumb-box img {
+        .gallery-main img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover
         }
 
-        .product-details-info {
-            width: 50%;
+        .gallery-thumbs {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap
         }
 
-        .product-title-detail {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 10px;
+        .thumb {
+            width: 58px;
+            height: 58px;
+            border: 2px solid transparent;
+            background: #d9d9d9;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            padding: 0
         }
 
-        .product-price-detail {
-            font-size: 18px;
+        .thumb.active,
+        .thumb:hover {
+            border-color: var(--brand)
+        }
+
+        .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        .detail-info {
+            flex: 1;
+            font-size: 13px
+        }
+
+        .detail-info h1 {
+            font-size: 20px;
+            font-weight: 600
+        }
+
+        .detail-price {
+            margin: 6px 0;
+            font-size: 15px
+        }
+
+        .detail-meta {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 14px
+        }
+
+        .detail-block {
+            margin-top: 16px
+        }
+
+        .detail-label {
+            display: block;
             font-weight: 600;
-            color: #4b5563;
-            margin-bottom: 20px;
-        }
-
-        .section-label {
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #374151;
-            margin-bottom: 8px;
+            margin-bottom: 8px
         }
 
         .size-options {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            flex-wrap: wrap
         }
 
         .size-btn {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #d1d5db;
+            min-width: 38px;
+            height: 34px;
+            padding: 0 10px;
+            border: 1px solid #999;
             background: #fff;
             border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+            font-size: 12px;
+            cursor: pointer
         }
 
-        .size-btn:hover,
-        .size-btn.active {
-            border-color: #1f2937;
-            background: #1f2937;
+        .size-btn.selected,
+        .size-btn:hover {
+            background: var(--dark);
             color: #fff;
+            border-color: var(--dark)
         }
 
-        .color-options {
+        .detail-desc {
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 6px;
+            white-space: pre-line
+        }
+
+        .detail-stock {
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .detail-actions {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            align-items: center;
+            margin-top: 18px
         }
 
-        .color-box {
-            width: 30px;
-            height: 30px;
-            border: 1px solid #d1d5db;
-            border-radius: 50%;
-            cursor: pointer;
+        .detail-actions form {
+            margin: 0
         }
 
-        .desc-text {
-            font-size: 14px;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        .btn-add-cart {
-            width: 100%;
-            background: #262626;
-            color: #fff;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-add-cart:hover {
-            background: #C20042;
-        }
-
-        /* Right Sidebar Widgets */
-        .sidebar-widgets {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .designer-card,
-        .size-chart-card,
-        .map-card {
+        .designer-card {
+            width: 330px;
+            flex-shrink: 0;
             background: #fff;
-            border-radius: 12px;
+            border-radius: 14px;
+            box-shadow: var(--shadow-card);
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             text-align: center;
-        }
-
-        .designer-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #d1d5db;
-            margin: 0 auto 12px auto;
-            overflow: hidden;
-        }
-
-        .designer-name {
-            font-weight: 700;
-            font-size: 15px;
-            color: #1f2937;
-        }
-
-        .designer-ig {
-            font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 15px;
-        }
-
-        .btn-brand-catalog {
-            display: block;
-            background: #1f2937;
-            color: #fff;
-            padding: 8px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .btn-whatsapp {
-            display: block;
-            background: #25d366;
-            color: #fff;
-            padding: 8px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* Size Chart Table */
-        .size-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
             font-size: 12px;
         }
 
-        .size-table th,
-        .size-table td {
-            border: 1px solid #e5e7eb;
-            padding: 6px;
-            text-align: center;
+        .designer-card h3 {
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 14px
         }
 
-        .size-table th {
-            background: #C20042;
+        .designer-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: #d9d9d9;
+            margin: 0 auto 10px
+        }
+
+        .designer-name {
+            font-weight: 600
+        }
+
+        .designer-handle {
+            color: var(--muted);
+            margin-bottom: 14px
+        }
+
+        .designer-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 18px
+        }
+
+        .designer-buttons .btn {
+            padding: 8px 6px;
+            font-size: 12px
+        }
+
+        .size-chart table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px
+        }
+
+        .size-chart th {
+            background: var(--brand);
             color: #fff;
+            padding: 6px 4px;
+            font-weight: 600
         }
 
-        .map-box {
-            width: 100%;
-            height: 120px;
-            background: #e5e7eb;
-            border-radius: 8px;
-            margin-top: 10px;
-            overflow: hidden;
+        .size-chart td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #eee
         }
 
-        .map-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .size-text {
+            text-align: left;
+            white-space: pre-line;
+            line-height: 1.6
         }
 
         @media (max-width: 900px) {
-            .detail-layout {
-                grid-template-columns: 1fr;
+
+            .detail-layout,
+            .detail-card {
+                flex-direction: column
             }
 
-            .product-main-box {
-                flex-direction: column;
+            .designer-card,
+            .detail-gallery {
+                width: 100%
             }
 
-            .product-gallery,
-            .product-details-info {
-                width: 100%;
+            .detail-page {
+                padding: 18px
             }
         }
     </style>
 @endpush
 
 @section('content')
-    <div class="detail-container">
-        <a href="{{ route('shop.index') }}" class="back-link">&larr; Shop</a>
+    <div class="detail-page">
+        <a href="{{ route('shop.index') }}" class="back-link">&lsaquo; Shop</a>
+
+        @include('components.flash')
 
         <div class="detail-layout">
-            <!-- Kolom Kiri: Detail Produk Utama -->
-            <div class="product-main-box">
-                <div class="product-gallery">
-                    <div class="main-img-preview">
-                        <!-- Menampilkan gambar utama produk[cite: 10] -->
-                        <img src="{{ asset('images/Mockup_Pics/' . ($product->product_image ?? 'Trascend.jpg')) }}"
-                            alt="Product Image" id="mainImage"
-                            onerror="this.src='{{ asset('images/Mockup_Pics/Trascend.jpg') }}'">
+
+            {{-- ===== KARTU PRODUK ===== --}}
+            <div class="detail-card">
+                <div class="detail-gallery">
+                    <div class="gallery-main">
+                        @if ($product->cover_url)
+                            <img id="main-image" src="{{ $product->cover_url }}" alt="{{ $product->PRODUCTS_NAME }}">
+                        @else
+                            <div class="img-placeholder">No Image</div>
+                        @endif
                     </div>
-                    <div class="thumbnail-list">
-                        <div class="thumb-box"><img src="{{ asset('images/Mockup_Pics/Trascend.jpg') }}" alt="Thumb">
+
+                    @if ($product->images->count() > 1)
+                        <div class="gallery-thumbs">
+                            @foreach ($product->images as $img)
+                                <button type="button" class="thumb" data-src="{{ $img->src }}">
+                                    <img src="{{ $img->src }}" alt="">
+                                </button>
+                            @endforeach
                         </div>
-                        <div class="thumb-box"><img src="{{ asset('images/Mockup_Pics/Denim.jpg') }}" alt="Thumb"></div>
-                        <div class="thumb-box"><img src="{{ asset('images/Mockup_Pics/Demi_Couture.jpg') }}" alt="Thumb">
-                        </div>
-                        <div class="thumb-box"><img src="{{ asset('images/Mockup_Pics/ABC.jpg') }}" alt="Thumb"></div>
-                    </div>
+                    @endif
                 </div>
 
-                <div class="product-details-info">
-                    <h1 class="product-title-detail">{{ $product->product_name ?? 'Tiered Summer Dress' }}</h1>
-                    <div class="product-price-detail">Rp {{ number_format($product->product_price ?? 100000, 0, ',', '.') }}
+                <div class="detail-info">
+                    <h1>{{ $product->PRODUCTS_NAME }}</h1>
+                    <p class="detail-price">{{ $product->formatted_price }}</p>
+
+                    @if ($categoryName || $product->PRODUCTS_GENDER)
+                        <p class="detail-meta">
+                            {{ $categoryName }}@if ($categoryName && $product->PRODUCTS_GENDER)
+                                &middot;
+                            @endif{{ $product->PRODUCTS_GENDER }}
+                        </p>
+                    @endif
+
+                    <div class="detail-block">
+                        <span class="detail-label">Size</span>
+                        <div class="size-options">
+                            @foreach ($product->sizes as $i => $size)
+                                <button type="button" class="size-btn {{ $i === 0 ? 'selected' : '' }}"
+                                    data-size="{{ $size }}">{{ $size }}</button>
+                            @endforeach
+                        </div>
                     </div>
 
-                    <div class="section-label">Size</div>
-                    <div class="size-options">
-                        <button class="size-btn active">S</button>
-                        <button class="size-btn">M</button>
-                        <button class="size-btn">L</button>
-                        <button class="size-btn">XL</button>
+                    <div class="detail-block">
+                        <span class="detail-label">Product Description</span>
+                        <p class="detail-desc">{{ $product->PRODUCTS_DESCRIPTION ?: 'Belum ada deskripsi.' }}</p>
+                        @if ($product->PRODUCTS_MATERIAL)
+                            <p class="detail-desc"><strong>Material:</strong> {{ $product->PRODUCTS_MATERIAL }}</p>
+                        @endif
                     </div>
 
-                    <div class="section-label">Color</div>
-                    <div class="color-options">
-                        <div class="color-box" style="background: #1f2937;"></div>
-                        <div class="color-box" style="background: #ffffff;"></div>
-                        <div class="color-box" style="background: #C20042;"></div>
-                    </div>
-
-                    <div class="section-label">Product Description</div>
-                    <p class="desc-text">
-                        {{ $product->product_description ?? 'Elegantly crafted sustainable fashion piece designed by FDB students, combining modern aesthetic with traditional craftsmanship.' }}
+                    <p class="detail-stock">
+                        @if ($product->is_preorder)
+                            <span class="badge-preorder static">Pre-Order</span>
+                        @elseif ($product->PRODUCTS_STOCK > 0)
+                            Stok tersedia: {{ $product->PRODUCTS_STOCK }}
+                        @else
+                            <span class="text-red">Stok habis</span>
+                        @endif
                     </p>
 
-                    <button class="btn-add-cart">Add To Cart</button>
-                </div>
-            </div>
+                    <div class="detail-actions">
+                        @if (session()->has('user_id'))
+                            <form method="POST" action="{{ route('cart.store') }}">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
+                                <input type="hidden" name="size" id="selected-size" value="{{ $product->sizes[0] }}">
+                                <button type="submit" class="btn btn-dark" @disabled(!$product->is_preorder && $product->PRODUCTS_STOCK <= 0)>Add To
+                                    Cart</button>
+                            </form>
 
-            <!-- Kolom Kanan: Widget Desainer, Size Chart, & Maps -->
-            <div class="sidebar-widgets">
-                <!-- Profil Desainer/Brand[cite: 10] -->
-                <div class="designer-card">
-                    <div class="designer-avatar">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/Aveline.png') }}" alt="Brand Logo"
-                            style="width:100%; height:100%; object-fit:cover;">
-                    </div>
-                    <div class="designer-name">{{ $product->user->USERS_NAME ?? 'Aveline Atelier' }}</div>
-                    <div class="designer-ig">@aveline.official</div>
-                    <a href="{{ route('shop.index') }}" class="btn-brand-catalog">Brand Catalog</a>
-                    <a href="https://whatsapp.com" target="_blank" class="btn-whatsapp">WhatsApp</a>
-                </div>
-
-                <!-- Tabel Ukuran (Size Chart)[cite: 10] -->
-                <div class="size-chart-card">
-                    <div class="section-label" style="text-align: left;">Size Chart (cm)</div>
-                    <table class="size-table">
-                        <tr>
-                            <th>Size</th>
-                            <th>Bust</th>
-                            <th>Length</th>
-                            <th>Shoulder</th>
-                        </tr>
-                        <tr>
-                            <td>S</td>
-                            <td>84</td>
-                            <td>90</td>
-                            <td>36</td>
-                        </tr>
-                        <tr>
-                            <td>M</td>
-                            <td>88</td>
-                            <td>92</td>
-                            <td>38</td>
-                        </tr>
-                        <tr>
-                            <td>L</td>
-                            <td>92</td>
-                            <td>94</td>
-                            <td>40</td>
-                        </tr>
-                        <tr>
-                            <td>XL</td>
-                            <td>96</td>
-                            <td>96</td>
-                            <td>42</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- Maps Lokasi / Kampus[cite: 10] -->
-                <div class="map-card">
-                    <div class="section-label" style="text-align: left;">Location</div>
-                    <div class="map-box">
-                        <img src="https://via.placeholder.com/300x120?text=Universitas+Ciputra+Maps" alt="Location Map">
+                            <form method="POST" action="{{ route('wishlist.toggle') }}">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
+                                <button type="submit" class="btn-icon {{ $inWishlist ? 'on' : '' }}" aria-label="Wishlist"
+                                    title="{{ $inWishlist ? 'Hapus dari wishlist' : 'Tambah ke wishlist' }}">
+                                    <i class="{{ $inWishlist ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-dark">Login untuk Add To Cart</a>
+                            <a href="{{ route('login') }}" class="btn-icon" aria-label="Wishlist"><i
+                                    class="fa-regular fa-heart"></i></a>
+                        @endif
                     </div>
                 </div>
             </div>
+
+            {{-- ===== PROFIL DESIGNER + SIZE CHART ===== --}}
+            <aside class="designer-card">
+                <h3>Designer Profile</h3>
+
+                <div class="designer-avatar"></div>
+                <p class="designer-name">{{ $sellerName }}</p>
+                <p class="designer-handle">{{ '@' . \Illuminate\Support\Str::slug($sellerName, '') }}</p>
+
+                <div class="designer-buttons">
+                    <a href="{{ route('shop.index', ['brand' => $sellerId]) }}" class="btn btn-dark">Brand Catalog</a>
+                    @if ($waLink)
+                        <a href="{{ $waLink }}" target="_blank" rel="noopener" class="btn btn-wa">WhatsApp</a>
+                    @else
+                        <span class="btn btn-wa disabled">WhatsApp</span>
+                    @endif
+                </div>
+
+                <div class="size-chart">
+                    @if ($product->size_rows)
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Size</th>
+                                    <th>Bust (cm)</th>
+                                    <th>Length (cm)</th>
+                                    <th>Shoulder (cm)</th>
+                                    <th>Sleeve (cm)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($product->size_rows as $row)
+                                    <tr>
+                                        <td>{{ $row['size'] ?? '-' }}</td>
+                                        <td>{{ $row['bust'] ?? '-' }}</td>
+                                        <td>{{ $row['length'] ?? '-' }}</td>
+                                        <td>{{ $row['shoulder'] ?? '-' }}</td>
+                                        <td>{{ $row['sleeve'] ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @elseif ($product->size_text)
+                        <p class="size-text">{{ $product->size_text }}</p>
+                    @else
+                        <p class="size-text muted">Size chart belum tersedia.</p>
+                    @endif
+                </div>
+            </aside>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.querySelectorAll('.thumb').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.getElementById('main-image').src = btn.dataset.src;
+                document.querySelectorAll('.thumb').forEach(function(t) {
+                    t.classList.remove('active');
+                });
+                btn.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.size-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.size-btn').forEach(function(b) {
+                    b.classList.remove('selected');
+                });
+                btn.classList.add('selected');
+                var hidden = document.getElementById('selected-size');
+                if (hidden) hidden.value = btn.dataset.size;
+            });
+        });
+    </script>
+@endpush

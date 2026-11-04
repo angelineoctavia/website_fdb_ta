@@ -5,18 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log In - MADE BY PIDIZ</title>
-    <!-- Google Font: Plus Jakarta Sans -->
+    <!-- Google Font: Inter (sama dengan header/footer seller, admin & customer) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
         html,
@@ -25,14 +25,22 @@
             height: 100vh;
             overflow: hidden;
             background-color: #ffffff;
+            font-size: 14px;
             display: flex;
             flex-direction: column;
         }
 
-        /* 1. Top Header */
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
+
+        /* 1. Top Header (ukuran disamakan dengan header seller/admin) */
         .auth-header {
-            height: 56px;
-            padding: 0 35px;
+            height: 68px;
+            padding: 0 36px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -42,19 +50,21 @@
         }
 
         .auth-header img {
-            height: 26px;
+            height: 34px;
             object-fit: contain;
         }
 
         .auth-header .divider {
-            color: #d1d5db;
-            font-size: 16px;
+            width: 1px;
+            height: 34px;
+            background: #d1d5db;
+            font-size: 0;
         }
 
         .auth-header .brand {
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            font-size: 17px;
             color: #111827;
         }
 
@@ -62,7 +72,7 @@
         .auth-container {
             display: flex;
             flex: 1;
-            height: calc(100vh - 56px - 60px);
+            min-height: 0;
             overflow: hidden;
         }
 
@@ -89,13 +99,14 @@
             align-items: center;
             padding: 20px;
             height: 100%;
+            overflow-y: auto;
         }
 
         /* 3. Login Card & Form */
         .login-card {
             background: #ffffff;
             width: 100%;
-            max-width: 390px;
+            max-width: 400px;
             padding: 35px 32px 30px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
@@ -104,7 +115,7 @@
 
         .login-card h2 {
             font-size: 24px;
-            font-weight: 800;
+            font-weight: 700;
             color: #1e293b;
             margin-bottom: 28px;
         }
@@ -121,7 +132,7 @@
             border-bottom: 1px solid #475569;
             padding: 6px 25px 6px 0;
             outline: none;
-            font-size: 13.5px;
+            font-size: 14px;
             color: #1e293b;
             background: transparent;
             transition: border-color 0.2s;
@@ -129,20 +140,42 @@
 
         .form-control::placeholder {
             color: #94a3b8;
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .form-control:focus {
             border-bottom-color: #C20042;
         }
 
-        .field-icon {
+        /* Ikon di kanan kolom (amplop & mata): kotak ukuran sama, isinya di tengah */
+        .field-icon,
+        .toggle-eye {
             position: absolute;
             right: 0;
-            bottom: 8px;
+            bottom: 3px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #64748b;
-            font-size: 13px;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .field-icon {
             pointer-events: none;
+        }
+
+        .toggle-eye {
+            background: none;
+            border: 0;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .toggle-eye:hover {
+            color: #C20042;
         }
 
         .forgot-password {
@@ -152,7 +185,7 @@
         }
 
         .forgot-password a {
-            font-size: 11.5px;
+            font-size: 12px;
             color: #94a3b8;
             text-decoration: none;
             transition: color 0.2s;
@@ -171,7 +204,7 @@
             padding: 11px;
             border-radius: 16px;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
         }
@@ -186,22 +219,21 @@
 
         .register-link {
             margin-top: 22px;
-            font-size: 12.5px;
+            font-size: 13px;
             color: #64748b;
         }
 
         .register-link a {
             color: #C20042;
-            font-weight: 700;
+            font-weight: 600;
             text-decoration: underline;
         }
 
-        /* 4. Compact Footer */
+        /* 4. Footer (ukuran disamakan dengan footer seller/admin) */
         .auth-footer {
-            height: 60px;
             background-color: #C20042;
             color: white;
-            padding: 10px 35px;
+            padding: 12px 36px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -209,19 +241,20 @@
         }
 
         .auth-footer .brand {
-            font-size: 14px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.2;
         }
 
         .auth-footer hr {
             border: 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.25);
-            margin: 4px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.45);
+            margin: 6px 0;
         }
 
         .auth-footer p {
-            font-size: 10.5px;
+            font-size: 13px;
+            line-height: 1.2;
             color: #fbcfe8;
         }
 
@@ -231,7 +264,12 @@
             html,
             body {
                 height: auto;
+                min-height: 100vh;
                 overflow: auto;
+            }
+
+            .auth-header {
+                padding: 0 16px;
             }
 
             .auth-container {
@@ -249,6 +287,10 @@
 
             .login-card {
                 max-width: 100%;
+            }
+
+            .auth-footer {
+                padding: 12px 16px;
             }
         }
     </style>
@@ -282,7 +324,7 @@
 
                     {{-- Tampilkan Error jika Gagal Login --}}
                     @if ($errors->any())
-                        <div class="alert-error" style="color: red; font-size: 12px; margin-bottom: 15px;">
+                        <div class="alert-error" style="color: red; font-size: 13px; margin-bottom: 15px;">
                             {{ $errors->first() }}
                         </div>
                     @endif
@@ -290,11 +332,15 @@
                     <div class="form-group">
                         <input type="text" name="username" class="form-control" placeholder="Username" required
                             autocomplete="off">
-                        <span class="field-icon">&#9993;</span>
+                        <span class="field-icon"><i class="fa-regular fa-envelope"></i></span>
                     </div>
                     <div class="form-group">
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
-                        <span class="field-icon">&#128065;</span>
+                        <input type="password" name="password" id="passwordField" class="form-control"
+                            placeholder="Password" required style="padding-right: 35px;">
+                        <button type="button" class="toggle-eye" id="togglePassword"
+                            aria-label="Tampilkan / sembunyikan password" onclick="togglePasswordVisibility()">
+                            <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                        </button>
                     </div>
                     <div class="forgot-password">
                         <a href="#">Forgot password?</a>
@@ -309,13 +355,22 @@
         </div>
     </div>
 
-    <!-- Footer Compact -->
+    <!-- Footer -->
     <div class="auth-footer">
         <div class="brand">MADE BY PIDIZ</div>
         <hr>
         <p>&copy; 2026 Pidiz FDB UC. All Rights Reserved.</p>
     </div>
 
+    <script>
+        function togglePasswordVisibility() {
+            const pwd = document.getElementById('passwordField');
+            const icon = document.getElementById('eyeIcon');
+            const show = pwd.type === 'password';
+            pwd.type = show ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !show);
+            icon.classList.toggle('fa-eye-slash', show);
+        }
+    </script>
 </body>
-
 </html>

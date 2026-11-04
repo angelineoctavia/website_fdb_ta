@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('PRODUCTS_DESCRIPTION')->nullable();
             $table->string('PRODUCTS_MATERIAL', 100)->nullable();
             $table->string('PRODUCTS_GENDER', 10)->nullable();       // Women / Men / Unisex
-            $table->text('PRODUCTS_SIZE_CHART')->nullable();         // JSON size chart (opsional)
+             $table->text('PRODUCTS_SIZE_CHART')->nullable();        // JSON size chart (opsional)
             $table->smallInteger('PRODUCTS_READY_TYPE');
             $table->integer('PRODUCTS_PREORDER_DURATION')->nullable();
             $table->boolean('PRODUCTS_STATUS_DEL')->default(false);

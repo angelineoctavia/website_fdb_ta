@@ -38,10 +38,6 @@
                 <b>Pembayaran &amp; Pembagian</b>
                 <table style="font-size:13px;margin-top:8px;width:100%">
                     <tr>
-                        <td>Metode</td>
-                        <td style="text-align:right">{{ $order->TRANSACTIONS_PAYMENT_METHOD ?: '-' }}</td>
-                    </tr>
-                    <tr>
                         <td>Tanggal</td>
                         <td style="text-align:right">
                             {{ \Carbon\Carbon::parse($order->TRANSACTIONS_DATE)->format('d M Y') }}</td>

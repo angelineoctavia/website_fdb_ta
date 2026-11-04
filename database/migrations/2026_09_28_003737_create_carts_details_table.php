@@ -14,6 +14,10 @@ return new class extends Migration
             $table->string('PRODUCTS_ID', 8);
             $table->decimal('CARTS_DETAILS_PRICE', 12, 2);
             $table->integer('CARTS_DETAILS_QTY');
+
+            // Kolom ukuran yang tadinya dipisah, sekarang digabung di sini langsung:
+            $table->string('CARTS_DETAILS_SELECTED_SIZE', 6)->nullable();
+
             $table->text('CARTS_DETAILS_CUSTOM_SIZE_NOTES')->nullable();
             $table->boolean('CARTS_DETAILS_STATUS_DEL')->default(false);
             $table->timestamps();

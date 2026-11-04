@@ -5,18 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - MADE BY PIDIZ</title>
-    <!-- Google Font: Plus Jakarta Sans -->
+    <!-- Google Font: Inter (sama dengan header/footer seller, admin & customer) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
         html,
@@ -25,14 +25,22 @@
             height: 100vh;
             overflow: hidden;
             background-color: #ffffff;
+            font-size: 14px;
             display: flex;
             flex-direction: column;
         }
 
-        /* 1. Top Header */
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+        }
+
+        /* 1. Top Header (ukuran disamakan dengan header seller/admin) */
         .auth-header {
-            height: 56px;
-            padding: 0 35px;
+            height: 68px;
+            padding: 0 36px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -42,19 +50,21 @@
         }
 
         .auth-header img {
-            height: 26px;
+            height: 34px;
             object-fit: contain;
         }
 
         .auth-header .divider {
-            color: #d1d5db;
-            font-size: 16px;
+            width: 1px;
+            height: 34px;
+            background: #d1d5db;
+            font-size: 0;
         }
 
         .auth-header .brand {
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            font-size: 17px;
             color: #111827;
         }
 
@@ -62,7 +72,7 @@
         .auth-container {
             display: flex;
             flex: 1;
-            height: calc(100vh - 56px - 60px);
+            min-height: 0;
             overflow: hidden;
         }
 
@@ -89,13 +99,14 @@
             align-items: center;
             padding: 20px;
             height: 100%;
+            overflow-y: auto;
         }
 
         /* 3. Register Card & Form */
         .register-card {
             background: #ffffff;
             width: 100%;
-            max-width: 390px;
+            max-width: 400px;
             padding: 32px 30px 25px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
@@ -104,7 +115,7 @@
 
         .register-card h2 {
             font-size: 24px;
-            font-weight: 800;
+            font-weight: 700;
             color: #1e293b;
             margin-bottom: 24px;
         }
@@ -112,6 +123,56 @@
         .form-group {
             margin-bottom: 16px;
             text-align: left;
+            position: relative;
+        }
+
+        /* Ikon di kanan kolom: kotak 24x24 sama persis dengan halaman login */
+        .field-icon,
+        .toggle-eye {
+            position: absolute;
+            right: 0;
+            bottom: 3px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .field-icon {
+            pointer-events: none;
+        }
+
+        .toggle-eye {
+            background: none;
+            border: 0;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .toggle-eye:hover {
+            color: #C20042;
+        }
+
+        .form-control.has-icon {
+            padding-right: 32px;
+        }
+
+        /* Dropdown role: sejajar dengan input lain & abu-abu seperti placeholder sebelum dipilih */
+        select.form-control {
+            padding-left: 0;
+            padding-right: 32px;
+        }
+
+        select.form-control:invalid {
+            color: #94a3b8;
+        }
+
+        select.form-control option {
+            color: #1e293b;
         }
 
         .form-control {
@@ -120,7 +181,7 @@
             border-bottom: 1px solid #475569;
             padding: 6px 0;
             outline: none;
-            font-size: 13.5px;
+            font-size: 14px;
             color: #1e293b;
             background: transparent;
             transition: border-color 0.2s;
@@ -128,7 +189,7 @@
 
         .form-control::placeholder {
             color: #94a3b8;
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .form-control:focus {
@@ -144,7 +205,7 @@
             padding: 11px;
             border-radius: 16px;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             margin-top: 18px;
             transition: background 0.2s, transform 0.1s;
@@ -160,22 +221,21 @@
 
         .login-link {
             margin-top: 18px;
-            font-size: 12.5px;
+            font-size: 13px;
             color: #64748b;
         }
 
         .login-link a {
             color: #C20042;
-            font-weight: 700;
+            font-weight: 600;
             text-decoration: underline;
         }
 
-        /* 4. Compact Footer */
+        /* 4. Footer (ukuran disamakan dengan footer seller/admin) */
         .auth-footer {
-            height: 60px;
             background-color: #C20042;
             color: white;
-            padding: 10px 35px;
+            padding: 12px 36px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -183,19 +243,20 @@
         }
 
         .auth-footer .brand {
-            font-size: 14px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.2;
         }
 
         .auth-footer hr {
             border: 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.25);
-            margin: 4px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.45);
+            margin: 6px 0;
         }
 
         .auth-footer p {
-            font-size: 10.5px;
+            font-size: 13px;
+            line-height: 1.2;
             color: #fbcfe8;
         }
 
@@ -205,7 +266,12 @@
             html,
             body {
                 height: auto;
+                min-height: 100vh;
                 overflow: auto;
+            }
+
+            .auth-header {
+                padding: 0 16px;
             }
 
             .auth-container {
@@ -223,6 +289,10 @@
 
             .register-card {
                 max-width: 100%;
+            }
+
+            .auth-footer {
+                padding: 12px 16px;
             }
         }
     </style>
@@ -247,14 +317,13 @@
         </div>
 
         <!-- Form Kanan -->
-        <!-- Form Kanan -->
         <div class="auth-right">
             <div class="register-card">
                 <h2>Register Here</h2>
 
                 @if ($errors->any())
                     <div
-                        style="background: #fee2e2; color: #991b1b; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 12px; text-align: left;">
+                        style="background: #fee2e2; color: #991b1b; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; text-align: left;">
                         @foreach ($errors->all() as $error)
                             <div>{{ $error }}</div>
                         @endforeach
@@ -264,16 +333,19 @@
                 <form action="{{ route('register.process') }}" method="POST">
                     @csrf
                     <div class="form-group">
-                        <input type="text" name="username" class="form-control" placeholder="Username"
+                        <input type="text" name="username" class="form-control has-icon" placeholder="Username"
                             value="{{ old('username') }}" required autocomplete="off">
+                        <span class="field-icon"><i class="fa-regular fa-user"></i></span>
                     </div>
 
                     <!-- Password dengan Icon Mata -->
-                    <div class="form-group" style="position: relative;">
-                        <input type="password" name="password" id="passwordField" class="form-control"
-                            placeholder="Password" required style="padding-right: 35px;">
-                        <i class="fa-solid fa-eye" id="togglePassword" onclick="togglePasswordVisibility()"
-                            style="position: absolute; right: 0; bottom: 8px; cursor: pointer; color: #94a3b8; font-size: 14px;"></i>
+                    <div class="form-group">
+                        <input type="password" name="password" id="passwordField" class="form-control has-icon"
+                            placeholder="Password" required>
+                        <button type="button" class="toggle-eye" aria-label="Tampilkan / sembunyikan password"
+                            onclick="togglePasswordVisibility()">
+                            <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                        </button>
                     </div>
 
                     <!-- Dropdown Role (Customer / Seller) -->
@@ -287,8 +359,9 @@
                     </div>
 
                     <div class="form-group">
-                        <input type="text" name="phone_number" class="form-control"
-                            placeholder="Phone Number (08xx / +62)" value="{{ old('phone_number') }}" required>
+                        <input type="tel" inputmode="tel" name="phone_number" class="form-control has-icon"
+                            placeholder="Phone Number Format (62XXXXXXXXXXX)" value="{{ old('phone_number') }}" required>
+                        <span class="field-icon"><i class="fa-solid fa-phone"></i></span>
                     </div>
 
                     <button type="submit" class="btn-register">Register</button>
@@ -300,26 +373,19 @@
             </div>
         </div>
 
-        <!-- Script Toggle Password & FontAwesome CDN -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <script>
             function togglePasswordVisibility() {
                 const pwd = document.getElementById('passwordField');
-                const icon = document.getElementById('togglePassword');
-                if (pwd.type === 'password') {
-                    pwd.type = 'text';
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    pwd.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
+                const icon = document.getElementById('eyeIcon');
+                const show = pwd.type === 'password';
+                pwd.type = show ? 'text' : 'password';
+                icon.classList.toggle('fa-eye', !show);
+                icon.classList.toggle('fa-eye-slash', show);
             }
         </script>
     </div>
 
-    <!-- Footer Compact -->
+    <!-- Footer -->
     <div class="auth-footer">
         <div class="brand">MADE BY PIDIZ</div>
         <hr>
@@ -327,5 +393,4 @@
     </div>
 
 </body>
-
 </html>

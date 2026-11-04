@@ -119,6 +119,9 @@
                     <input class="sc-input" name="whatsapp" value="{{ old('whatsapp', $user->USERS_PHONE_NUMBER) }}">
                     <label class="sc-label">Instagram</label>
                     <input class="sc-input" name="instagram" value="{{ old('instagram', $user->USERS_INSTAGRAM) }}">
+                    <label class="sc-label">Designer Bio <span style="color:#999">(tampil di halaman produk, maks. 500
+                            karakter)</span></label>
+                    <textarea class="sc-input" name="bio" rows="4" maxlength="500">{{ old('bio', $user->USERS_BIO) }}</textarea>
                 </div>
 
                 <div>

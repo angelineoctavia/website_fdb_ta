@@ -5,10 +5,13 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\HomeController;
 
-// 1. Akses awal langsung diarahkan ke Register
+// 1. Akses awal langsung diarahkan ke Login
 Route::get('/', function () {
-    return redirect()->route('register');
+    return redirect()->route('home');
 });
 
 // 2. Auth Routes (Register, Login, Logout)
@@ -19,50 +22,60 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// 3. Halaman Customer (Memerlukan Session Login & Folder customer/)
-Route::middleware(['web'])->group(function () {
+// 3. Public Pages (Bisa diakses tanpa login atau umum)
+Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/categories', [ShopController::class, 'index'])->name('categories.index');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.show');
+Route::get('/shop-detail/{id}', [ShopController::class, 'show'])->name('shop.detail'); // Alias pengaman
 
-    // Home Page
-    Route::get('/home', function () {
-        if (!session()->has('user_id')) {
-            return redirect()->route('login')->withErrors(['error' => 'Silakan login terlebih dahulu.']);
-        }
-        return view('customer.home');
-    })->name('home');
+Route::get('/about', function () {
+    if (!session()->has('user_id')) {
+        return redirect()->route('login')->withErrors(['error' => 'Please login first.']);
+    }
+    return view('customer.about');
+})->name('about');
 
-    // Categories & Shop Katalog
-    Route::get('/categories', [ShopController::class, 'index'])->name('categories.index');
-    Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 
-    // Detail Produk Berdasarkan ID (Menggunakan shop_detail)
-    Route::get('/shop/{id}', [ShopController::class, 'show'])->name('shop.detail');
+// 4. Customer Routes (Memerlukan Session Login & Role Customer 'C')[cite: 4]
+Route::middleware(['web', 'role:C'])->group(function () {
+    // Cart & Wishlist Routes (Customer)
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+    Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
 
-    // About Us Page
-    Route::get('/about', function () {
-        if (!session()->has('user_id')) {
-            return redirect()->route('login')->withErrors(['error' => 'Silakan login terlebih dahulu.']);
-        }
-        return view('customer.about');
-    })->name('about');
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::post('/wishlist/{id}/to-cart', [WishlistController::class, 'toCart'])->name('wishlist.toCart');
+    Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
 });
 
-// 4. Seller Center Routes (Dashboard, Upload, Orders, Profile)
-Route::middleware(['web'])->prefix('seller')->group(function () {
+
+// 5. Seller Center Routes (Memerlukan Role Seller 'S')[cite: 4]
+Route::middleware(['web', 'role:S'])->prefix('seller')->group(function () {
     Route::get('/dashboard', [SellerController::class, 'dashboard'])->name('seller.dashboard');
 
     Route::get('/upload', [SellerController::class, 'uploadForm'])->name('seller.upload');
     Route::post('/upload', [SellerController::class, 'uploadStore'])->name('seller.upload.process');
 
+    // Product Management (Seller)
+    Route::get('/products', [SellerController::class, 'products'])->name('seller.products');
+    Route::get('/products/{id}/edit', [SellerController::class, 'productEdit'])->name('seller.products.edit');
+    Route::put('/products/{id}', [SellerController::class, 'productUpdate'])->name('seller.products.update');
+    Route::delete('/products/{id}', [SellerController::class, 'productDestroy'])->name('seller.products.destroy');
+
     Route::get('/orders', [SellerController::class, 'orders'])->name('seller.orders');
-    Route::get('/orders/{id}', [SellerController::class, 'orderShow'])->name('seller.orders.show');   // BARU: View Details
+    Route::get('/orders/{id}', [SellerController::class, 'orderShow'])->name('seller.orders.show');   // View Details
     Route::patch('/orders/{id}', [SellerController::class, 'orderUpdateStatus'])->name('seller.orders.update');
 
     Route::get('/profile', [SellerController::class, 'profile'])->name('seller.profile');
     Route::post('/profile', [SellerController::class, 'profileUpdate'])->name('seller.profile.update');
 });
 
-// 5. Admin Center Routes
-Route::middleware(['web'])->prefix('admin')->group(function () {
+
+// 6. Admin Center Routes (Memerlukan Role Admin 'A')[cite: 4]
+Route::middleware(['web', 'role:A'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/report', [AdminController::class, 'report'])->name('admin.report');   // download XLSX
 

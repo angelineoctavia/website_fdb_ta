@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Support\Phone;
 
 class SellerController extends Controller
 {
@@ -14,6 +15,10 @@ class SellerController extends Controller
     // -> packing -> shipping -> completed (3 terakhir manual oleh seller)
     const PAID = ['paid', 'packing', 'shipping', 'completed'];
     const NEXT = ['paid' => ['packing'], 'packing' => ['shipping'], 'shipping' => ['completed']];
+
+    // Ukuran foto produk (rasio 3:4 portrait). Ubah di sini kalau mau rasio lain, mis. 1200 x 900 untuk 4:3.
+    const IMG_W = 900;
+    const IMG_H = 1200;
 
     /** ID seller yang login. Kalau login kamu pakai session manual, ganti di sini aja. */
     private function sid(): string
@@ -81,7 +86,9 @@ class SellerController extends Controller
     public function uploadForm()
     {
         $categories = DB::table('categories')->where('CATEGORIES_STATUS_DEL', 0)->orderBy('CATEGORIES_NAME')->get();
-        return view('seller.upload', compact('categories'));
+        $imgW = self::IMG_W;
+        $imgH = self::IMG_H;
+        return view('seller.upload', compact('categories', 'imgW', 'imgH'));
     }
 
     public function uploadStore(Request $r)
@@ -98,7 +105,13 @@ class SellerController extends Controller
             'ready_type'    => 'required|in:1,2',                 // 1 = ready stock, 2 = pre-order
             'preorder_days' => 'nullable|integer|min:1|required_if:ready_type,2',
             'images'        => 'required|array|min:1|max:5',
-            'images.*'      => 'image|max:4096',
+            'images.*'      => ['image', 'max:4096', function ($attribute, $file, $fail) {
+                // Semua foto produk harus berrasio sama supaya tampil seragam (tidak terpotong) di sisi customer.
+                $size = @getimagesize($file->getPathname());
+                if (!$size || abs($size[0] / $size[1] - self::IMG_W / self::IMG_H) > 0.02) {
+                    $fail('Rasio foto harus 3:4. Atur lewat tombol Crop / Stretch / Fit saat memilih foto.');
+                }
+            }],
         ]);
 
         DB::transaction(function () use ($r, $d) {
@@ -239,17 +252,21 @@ class SellerController extends Controller
     {
         $d = $r->validate([
             'brand'     => 'required|max:50',
-            'whatsapp'  => 'nullable|max:15',
+            'whatsapp'  => ['nullable', 'max:20', function ($attribute, $value, $fail) {
+                if (!Phone::normalize($value)) $fail('Nomor WhatsApp tidak valid. Contoh: 081234567890.');
+            }],
             'instagram' => 'nullable|max:50',
             'address'   => 'nullable|string',
+            'bio'       => 'nullable|string|max:500',
             'picture'   => 'nullable|image|max:2048',
         ]);
 
         $upd = [
             'USERS_NAME'         => $d['brand'],
-            'USERS_PHONE_NUMBER' => $d['whatsapp'] ?? null,
+            'USERS_PHONE_NUMBER' => Phone::normalize($d['whatsapp'] ?? ''),   // disimpan sebagai 628xxx
             'USERS_INSTAGRAM'    => $d['instagram'] ?? null,
             'USERS_ADDRESS'      => $d['address'] ?? null,
+            'USERS_BIO'          => $d['bio'] ?? null,
             'updated_at'         => now(),
         ];
 

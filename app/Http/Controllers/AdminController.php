@@ -100,7 +100,6 @@ class AdminController extends Controller
                 't.TRANSACTIONS_DATE',
                 't.TRANSACTIONS_ORDER_STATUS',
                 't.TRANSACTIONS_TOTAL_AMOUNT',
-                't.TRANSACTIONS_PAYMENT_METHOD',
                 'b.USERS_NAME as customer'
             )
             ->selectRaw('GROUP_CONCAT(DISTINCT s.USERS_NAME SEPARATOR ", ") as sellers, GROUP_CONCAT(p.PRODUCTS_NAME SEPARATOR ", ") as products, SUM(d.TRANSACTIONS_QTY) as qty, '
@@ -110,7 +109,6 @@ class AdminController extends Controller
                 't.TRANSACTIONS_DATE',
                 't.TRANSACTIONS_ORDER_STATUS',
                 't.TRANSACTIONS_TOTAL_AMOUNT',
-                't.TRANSACTIONS_PAYMENT_METHOD',
                 't.TRANSACTIONS_PRODI_FEE',
                 't.TRANSACTIONS_SELLER_PAY',
                 'b.USERS_NAME'
@@ -240,7 +238,6 @@ class AdminController extends Controller
                 (float) $o->TRANSACTIONS_TOTAL_AMOUNT,
                 (float) $o->fee,
                 (float) $o->seller_pay,
-                $o->TRANSACTIONS_PAYMENT_METHOD ?? '-',
                 $o->TRANSACTIONS_ORDER_STATUS,
             ]);
         $this->fillSheet(
@@ -255,7 +252,6 @@ class AdminController extends Controller
                 'Total',
                 'Admin ' . (int) round($rate * 100) . '%',
                 'Seller ' . (100 - (int) round($rate * 100)) . '%',
-                'Metode Bayar',
                 'Status'
             ],
             $tx,

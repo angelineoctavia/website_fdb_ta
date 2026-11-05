@@ -123,6 +123,12 @@ class ShopController extends Controller
             ->where('PRODUCTS_ID', $product->PRODUCTS_ID)
             ->where('WISHLISTS_STATUS_DEL', 0)->exists();
 
+        $sellerBio = $seller->USERS_BIO ?? null;
+        $pic = $seller->USERS_PROFILE_PICTURE ?? null;
+        $sellerPhoto = $pic
+            ? (str_starts_with($pic, 'http') ? $pic : asset('storage/' . ltrim($pic, '/')))
+            : null;
+
         return view('customer.shop_detail', [
             'product'      => $product,
             'sellerName'   => $sellerName,
@@ -130,6 +136,8 @@ class ShopController extends Controller
             'categoryName' => $categoryName,
             'waLink'       => $waLink,
             'inWishlist'   => $inWishlist,
+            'sellerBio'   => $sellerBio,
+            'sellerPhoto' => $sellerPhoto,
         ]);
     }
 }

@@ -215,17 +215,11 @@
                 </table>
             </div>
 
-            <form method="POST" id="checkout-form"
-                action="{{ \Illuminate\Support\Facades\Route::has('checkout.index') ? route('checkout.index') : '#' }}">
+            <form method="POST" id="checkout-form" action="{{ route('checkout.select') }}">
                 @csrf
                 <div class="cart-bottom">
                     <span class="cart-total">Total dipilih: <strong id="cart-total">Rp 0</strong></span>
-                    @if (\Illuminate\Support\Facades\Route::has('checkout.index'))
-                        <button type="submit" class="btn btn-dark" id="checkout-btn">Checkout</button>
-                    @else
-                        <button type="button" class="btn btn-dark"
-                            onclick="alert('Halaman Checkout dibuat di tahap berikutnya.')">Checkout</button>
-                    @endif
+                    <button type="submit" class="btn btn-dark" id="checkout-btn">Checkout</button>
                 </div>
             </form>
         @endif

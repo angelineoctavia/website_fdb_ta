@@ -235,6 +235,9 @@
 @endpush
 
 @section('content')
+    @if (session('success') || session('info') || session('error'))
+        <div class="section-container" style="padding-bottom:0">@include('components.flash')</div>
+    @endif
     <!-- 1. Hero Banner Image -->
     <section class="hero-banner">
         <img src="{{ asset('images/Cover_FDB_Cropped.jpg') }}" alt="Made By Pidiz Hero Banner"

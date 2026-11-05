@@ -62,8 +62,8 @@
         }
 
         .thumb {
-            width: 58px;
-            height: 58px;
+            width: 48px;
+            height: 64px;
             border: 2px solid transparent;
             background: #d9d9d9;
             border-radius: 4px;
@@ -148,7 +148,28 @@
         .detail-stock {
             margin-top: 14px;
             font-size: 12px;
-            color: var(--muted)
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .badge-ready {
+            display: inline-block;
+            background: #e7f6ec;
+            color: #1b7a3a;
+            border-radius: 99px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 600
+        }
+
+        .detail-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.5
         }
 
         .detail-actions {
@@ -160,6 +181,11 @@
 
         .detail-actions form {
             margin: 0
+        }
+
+        .detail-actions .btn[disabled] {
+            opacity: .45;
+            cursor: not-allowed
         }
 
         .designer-card {
@@ -181,11 +207,13 @@
         }
 
         .designer-avatar {
+            display: block;
             width: 84px;
             height: 84px;
             border-radius: 50%;
             background: #d9d9d9;
-            margin: 0 auto 10px
+            margin: 0 auto 10px;
+            object-fit: cover
         }
 
         .designer-name {
@@ -199,14 +227,22 @@
 
         .designer-buttons {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 8px;
-            margin-bottom: 18px
+            margin-bottom: 14px
         }
 
         .designer-buttons .btn {
             padding: 8px 6px;
             font-size: 12px
+        }
+
+        .designer-bio {
+            text-align: left;
+            line-height: 1.6;
+            color: #444;
+            white-space: pre-line;
+            margin-bottom: 18px
         }
 
         .size-chart table {
@@ -225,6 +261,13 @@
         .size-chart td {
             padding: 6px 4px;
             border-bottom: 1px solid #eee
+        }
+
+        .size-note {
+            text-align: left;
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 6px
         }
 
         .size-text {
@@ -253,6 +296,20 @@
 @endpush
 
 @section('content')
+    @php
+        // Pre-Order / Ready dibaca dari products.PRODUCTS_READY_TYPE lewat accessor model Product
+        // (satu sumber yang sama dengan halaman shop & cart).
+        $isPreorder = $product->is_preorder;
+        $stock = (int) $product->PRODUCTS_STOCK;
+        $loggedIn = session()->has('user_id');
+        $isCustomer = session('user_role') === 'C';
+
+        // Size chart format baru: {"columns":[...],"rows":[{"size":"S","values":[...]}]}
+        $chart = json_decode($product->PRODUCTS_SIZE_CHART ?? '', true);
+        $newChart = is_array($chart) && !empty($chart['rows']) && isset($chart['columns']);
+        $sizes = $newChart ? collect($chart['rows'])->pluck('size')->filter()->values()->all() : $product->sizes;
+    @endphp
+
     <div class="detail-page">
         <a href="{{ route('shop.index') }}" class="back-link">&lsaquo; Shop</a>
 
@@ -297,7 +354,7 @@
                     <div class="detail-block">
                         <span class="detail-label">Size</span>
                         <div class="size-options">
-                            @foreach ($product->sizes as $i => $size)
+                            @foreach ($sizes as $i => $size)
                                 <button type="button" class="size-btn {{ $i === 0 ? 'selected' : '' }}"
                                     data-size="{{ $size }}">{{ $size }}</button>
                             @endforeach
@@ -306,46 +363,66 @@
 
                     <div class="detail-block">
                         <span class="detail-label">Product Description</span>
-                        <p class="detail-desc">{{ $product->PRODUCTS_DESCRIPTION ?: 'Belum ada deskripsi.' }}</p>
+                        <p class="detail-desc">{{ $product->PRODUCTS_DESCRIPTION ?: 'No description yet.' }}</p>
                         @if ($product->PRODUCTS_MATERIAL)
                             <p class="detail-desc"><strong>Material:</strong> {{ $product->PRODUCTS_MATERIAL }}</p>
                         @endif
                     </div>
 
                     <p class="detail-stock">
-                        @if ($product->is_preorder)
+                        @if ($isPreorder)
                             <span class="badge-preorder static">Pre-Order</span>
-                        @elseif ($product->PRODUCTS_STOCK > 0)
-                            Stok tersedia: {{ $product->PRODUCTS_STOCK }}
+                            @if ($product->PRODUCTS_PREORDER_DURATION)
+                                <span>Estimated production: {{ $product->PRODUCTS_PREORDER_DURATION }} days</span>
+                            @endif
                         @else
-                            <span class="text-red">Stok habis</span>
+                            <span class="badge-ready">Ready Stock</span>
+                            @if ($stock > 0)
+                                <span>Stock: {{ $stock }}</span>
+                            @else
+                                <span class="text-red">Out of stock</span>
+                            @endif
                         @endif
                     </p>
 
                     <div class="detail-actions">
-                        @if (session()->has('user_id'))
-                            <form method="POST" action="{{ route('cart.store') }}">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
-                                <input type="hidden" name="size" id="selected-size" value="{{ $product->sizes[0] }}">
-                                <button type="submit" class="btn btn-dark" @disabled(!$product->is_preorder && $product->PRODUCTS_STOCK <= 0)>Add To
-                                    Cart</button>
-                            </form>
+                        @if ($loggedIn && $isCustomer)
+                            @if ($isPreorder)
+                                {{-- Pre-Order: tidak bisa masuk keranjang, hanya wishlist --}}
+                                <button type="button" class="btn btn-dark" disabled>Pre-Order</button>
+                            @else
+                                <form method="POST" action="{{ route('cart.store') }}">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
+                                    <input type="hidden" name="size" id="selected-size" value="{{ $sizes[0] ?? '' }}">
+                                    <button type="submit" class="btn btn-dark" @disabled($stock <= 0)>
+                                        {{ $stock <= 0 ? 'Out of Stock' : 'Add To Cart' }}
+                                    </button>
+                                </form>
+                            @endif
 
                             <form method="POST" action="{{ route('wishlist.toggle') }}">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
                                 <button type="submit" class="btn-icon {{ $inWishlist ? 'on' : '' }}" aria-label="Wishlist"
-                                    title="{{ $inWishlist ? 'Hapus dari wishlist' : 'Tambah ke wishlist' }}">
+                                    title="{{ $inWishlist ? 'Remove from wishlist' : 'Add to wishlist' }}">
                                     <i class="{{ $inWishlist ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
                                 </button>
                             </form>
-                        @else
-                            <a href="{{ route('login') }}" class="btn btn-dark">Login untuk Add To Cart</a>
+                        @elseif (!$loggedIn)
+                            @unless ($isPreorder)
+                                <a href="{{ route('login') }}" class="btn btn-dark">Login to Add To Cart</a>
+                            @endunless
                             <a href="{{ route('login') }}" class="btn-icon" aria-label="Wishlist"><i
                                     class="fa-regular fa-heart"></i></a>
                         @endif
+                        {{-- seller / admin: tidak ada tombol belanja --}}
                     </div>
+
+                    @if ($isPreorder)
+                        <p class="detail-note">Pre-Order products can't be added to the cart. Save it to your wishlist or
+                            contact the designer via WhatsApp.</p>
+                    @endif
                 </div>
             </div>
 
@@ -353,12 +430,17 @@
             <aside class="designer-card">
                 <h3>Designer Profile</h3>
 
-                <div class="designer-avatar"></div>
+                @if (!empty($sellerPicture))
+                    <img class="designer-avatar" src="{{ $sellerPicture }}" alt="{{ $sellerName }}">
+                @else
+                    <div class="designer-avatar"></div>
+                @endif
                 <p class="designer-name">{{ $sellerName }}</p>
-                <p class="designer-handle">{{ '@' . \Illuminate\Support\Str::slug($sellerName, '') }}</p>
+                <p class="designer-handle">
+                    {{ '@' . (!empty($sellerInstagram) ? ltrim($sellerInstagram, '@') : \Illuminate\Support\Str::slug($sellerName, '')) }}
+                </p>
 
                 <div class="designer-buttons">
-                    <a href="{{ route('shop.index', ['brand' => $sellerId]) }}" class="btn btn-dark">Brand Catalog</a>
                     @if ($waLink)
                         <a href="{{ $waLink }}" target="_blank" rel="noopener" class="btn btn-wa">WhatsApp</a>
                     @else
@@ -366,8 +448,34 @@
                     @endif
                 </div>
 
+                @if (!empty($sellerBio))
+                    <p class="designer-bio">{{ $sellerBio }}</p>
+                @endif
+
                 <div class="size-chart">
-                    @if ($product->size_rows)
+                    @if ($newChart)
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Size</th>
+                                    @foreach ($chart['columns'] as $col)
+                                        <th>{{ $col }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($chart['rows'] as $row)
+                                    <tr>
+                                        <td>{{ $row['size'] ?? '-' }}</td>
+                                        @foreach ($chart['columns'] as $j => $col)
+                                            <td>{{ ($row['values'][$j] ?? '') !== '' ? $row['values'][$j] : '-' }}</td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <p class="size-note">*All measurements in cm</p>
+                    @elseif ($product->size_rows)
                         <table>
                             <thead>
                                 <tr>
@@ -393,7 +501,7 @@
                     @elseif ($product->size_text)
                         <p class="size-text">{{ $product->size_text }}</p>
                     @else
-                        <p class="size-text muted">Size chart belum tersedia.</p>
+                        <p class="size-text muted">Size chart not available.</p>
                     @endif
                 </div>
             </aside>

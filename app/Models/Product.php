@@ -11,7 +11,7 @@ class Product extends Model
 {
     // ==== ASUMSI NAMA KOLOM (ubah di sini kalau beda dengan database kamu) ====
     public const SELLER_NAME_COLUMN   = 'USERS_NAME';       // nama brand / designer di tabel users
-    public const SELLER_PHONE_COLUMN  = 'USERS_PHONE';      // no. WhatsApp seller di tabel users
+    public const SELLER_PHONE_COLUMN  = 'USERS_PHONE_NUMBER';      // no. WhatsApp seller di tabel users
     public const CATEGORY_NAME_COLUMN = 'CATEGORIES_NAME';  // nama kategori di tabel categories
 
     protected $table = 'products';
@@ -56,10 +56,10 @@ class Product extends Model
         return 'Rp ' . number_format((float) $this->PRODUCTS_PRICE, 0, ',', '.');
     }
 
-    /** Asumsi: READY_TYPE 1 = pre-order, 0 = ready stock. */
+    /** 1 = Ready Stock, 2 = Pre-Order. */
     public function getIsPreorderAttribute(): bool
     {
-        return (int) $this->PRODUCTS_READY_TYPE === 1;
+        return (int) $this->PRODUCTS_READY_TYPE === 2;
     }
 
     /**

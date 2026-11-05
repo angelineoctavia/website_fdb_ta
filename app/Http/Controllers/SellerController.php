@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use App\Support\Phone;
 
 class SellerController extends Controller
@@ -93,26 +94,7 @@ class SellerController extends Controller
 
     public function uploadStore(Request $r)
     {
-        $d = $r->validate([
-            'name'          => 'required|max:100',
-            'category'      => 'required|exists:categories,CATEGORIES_ID',
-            'gender'        => 'required|in:Women,Men,Unisex',
-            'price'         => 'required|numeric|min:0',
-            'stock'         => 'required|integer|min:0',
-            'description'   => 'nullable|string',
-            'material'      => 'nullable|max:100',
-            'size_chart_json' => 'nullable|string',
-            'ready_type'    => 'required|in:1,2',                 // 1 = ready stock, 2 = pre-order
-            'preorder_days' => 'nullable|integer|min:1|required_if:ready_type,2',
-            'images'        => 'required|array|min:1|max:5',
-            'images.*'      => ['image', 'max:4096', function ($attribute, $file, $fail) {
-                // Semua foto produk harus berrasio sama supaya tampil seragam (tidak terpotong) di sisi customer.
-                $size = @getimagesize($file->getPathname());
-                if (!$size || abs($size[0] / $size[1] - self::IMG_W / self::IMG_H) > 0.02) {
-                    $fail('Rasio foto harus 3:4. Atur lewat tombol Crop / Stretch / Fit saat memilih foto.');
-                }
-            }],
-        ]);
+        $d = $this->validateProduct($r, false);
 
         DB::transaction(function () use ($r, $d) {
             $last = DB::table('products')->lockForUpdate()->max('PRODUCTS_ID');
@@ -120,37 +102,80 @@ class SellerController extends Controller
             $now  = now();
 
             DB::table('products')->insert([
-                'PRODUCTS_ID'              => $id,
-                'CATEGORIES_ID'            => $d['category'],
-                'USERS_ID'                 => $this->sid(),
-                'PRODUCTS_NAME'            => $d['name'],
-                'PRODUCTS_PRICE'           => $d['price'],
-                'PRODUCTS_STOCK'           => $d['stock'],
-                'PRODUCTS_DESCRIPTION'     => $d['description'] ?? null,
-                'PRODUCTS_MATERIAL'        => $d['material'] ?? null,
-                'PRODUCTS_GENDER'          => $d['gender'],
-                // opsional: null kalau seller tidak mengisi size chart
-                'PRODUCTS_SIZE_CHART'      => $this->cleanSizeChart($d['size_chart_json'] ?? null),
-                'PRODUCTS_READY_TYPE'      => $d['ready_type'],
-                'PRODUCTS_PREORDER_DURATION'   => $d['ready_type'] == 2 ? $d['preorder_days'] : null,
-                'PRODUCTS_STATUS_DEL'      => 0,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+                'PRODUCTS_ID'        => $id,
+                'USERS_ID'           => $this->sid(),
+                'PRODUCTS_STATUS_DEL' => 0,
+                'created_at'         => $now,
+                'updated_at'         => $now,
+            ] + $this->productPayload($d));
 
             foreach ($r->file('images') as $i => $file) {
                 DB::table('product_images')->insert([
-                    'PRODUCTS_ID'                => $id,
-                    'PRODUCT_IMAGES_URL'         => $file->store('products', 'public'),
-                    'PRODUCT_IMAGES_IS_PRIMARY'  => $i === 0 ? 1 : 0,
-                    'PRODUCT_IMAGES_STATUS_DEL'  => 0,
+                    'PRODUCTS_ID'               => $id,
+                    'PRODUCT_IMAGES_URL'        => $file->store('products', 'public'),
+                    'PRODUCT_IMAGES_IS_PRIMARY' => $i === 0 ? 1 : 0,
+                    'PRODUCT_IMAGES_STATUS_DEL' => 0,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
             }
         });
 
-        return redirect()->route('seller.upload')->with('success', 'Produk berhasil dipublish!');
+        return redirect()->route('seller.products')->with('success', 'Product published.');
+    }
+
+    /**
+     * Validasi form produk (dipakai Upload & Edit).
+     * Ready Stock (1): stok wajib, durasi diabaikan.
+     * Pre-Order  (2): durasi hari wajib, stok dikunci (disimpan 0).
+     */
+    private function validateProduct(Request $r, bool $isEdit): array
+    {
+        $rules = [
+            'name'            => 'required|max:100',
+            'category'        => 'required|exists:categories,CATEGORIES_ID',
+            'gender'          => 'required|in:Women,Men,Unisex',
+            'price'           => 'required|numeric|min:0',
+            'ready_type'      => 'required|in:1,2',
+            'stock'           => 'exclude_if:ready_type,2|required|integer|min:0',
+            'preorder_days'   => 'exclude_unless:ready_type,2|required|integer|min:1',
+            'description'     => 'nullable|string',
+            'material'        => 'nullable|max:100',
+            'size_chart_json' => 'nullable|string',
+            'images.*'        => ['image', 'max:4096', $this->ratioRule()],
+        ];
+
+        if ($isEdit) {
+            $rules += [
+                'images'          => 'nullable|array|max:5',
+                'remove_images'   => 'nullable|array',
+                'remove_images.*' => 'integer',
+                'primary_image'   => 'nullable|integer',
+            ];
+        } else {
+            $rules['images'] = 'required|array|min:1|max:5';
+        }
+
+        return $r->validate($rules);
+    }
+
+    /** Kolom tabel products dari data form yang sudah tervalidasi. */
+    private function productPayload(array $d): array
+    {
+        $pre = (int) $d['ready_type'] === 2;
+
+        return [
+            'CATEGORIES_ID'              => $d['category'],
+            'PRODUCTS_NAME'              => $d['name'],
+            'PRODUCTS_PRICE'             => $d['price'],
+            'PRODUCTS_STOCK'             => $pre ? 0 : (int) $d['stock'],
+            'PRODUCTS_DESCRIPTION'       => $d['description'] ?? null,
+            'PRODUCTS_MATERIAL'          => $d['material'] ?? null,
+            'PRODUCTS_GENDER'            => $d['gender'],
+            'PRODUCTS_SIZE_CHART'        => $this->cleanSizeChart($d['size_chart_json'] ?? null),
+            'PRODUCTS_READY_TYPE'        => $d['ready_type'],
+            'PRODUCTS_PREORDER_DURATION' => $pre ? (int) $d['preorder_days'] : null,
+        ];
     }
 
     /* ===================== ORDERS ===================== */
@@ -239,6 +264,149 @@ class SellerController extends Controller
             $rows[] = ['size' => mb_substr($size, 0, 10), 'values' => $vals];
         }
         return $rows ? json_encode(['columns' => $cols, 'rows' => $rows]) : null;
+    }
+
+    /** Semua foto produk harus berrasio sama (3:4) supaya tampil seragam di sisi customer. */
+    private function ratioRule(): \Closure
+    {
+        return function ($attribute, $file, $fail) {
+            $size = @getimagesize($file->getPathname());
+            if (!$size || abs($size[0] / $size[1] - self::IMG_W / self::IMG_H) > 0.02) {
+                $fail('Rasio foto harus 3:4. Atur lewat tombol Crop / Stretch / Fit saat memilih foto.');
+            }
+        };
+    }
+
+    /** Produk milik seller ini (aktif ATAU nonaktif). */
+    private function ownedProduct(string $id)
+    {
+        $p = DB::table('products')->where('PRODUCTS_ID', $id)->where('USERS_ID', $this->sid())->first();
+        abort_if(!$p, 404);
+        return $p;
+    }
+
+    /* ===================== MY PRODUCTS ===================== */
+    public function products(Request $r)
+    {
+        $q = trim((string) $r->query('q'));
+        $status = in_array($r->query('status'), ['active', 'inactive'], true) ? $r->query('status') : 'all';
+
+        $products = DB::table('products as p')
+            ->join('categories as c', 'c.CATEGORIES_ID', '=', 'p.CATEGORIES_ID')
+            ->where('p.USERS_ID', $this->sid())
+            ->when($status === 'active', fn($x) => $x->where('p.PRODUCTS_STATUS_DEL', 0))
+            ->when($status === 'inactive', fn($x) => $x->where('p.PRODUCTS_STATUS_DEL', 1))
+            ->when($q, fn($x) => $x->where('p.PRODUCTS_NAME', 'like', "%$q%"))
+            ->select(
+                'p.PRODUCTS_ID',
+                'p.PRODUCTS_NAME',
+                'p.PRODUCTS_PRICE',
+                'p.PRODUCTS_STOCK',
+                'p.PRODUCTS_READY_TYPE',
+                'p.PRODUCTS_PREORDER_DURATION',
+                'p.PRODUCTS_STATUS_DEL',
+                'c.CATEGORIES_NAME'
+            )
+            ->orderBy('p.PRODUCTS_STATUS_DEL')->orderByDesc('p.created_at')->orderByDesc('p.PRODUCTS_ID')
+            ->paginate(10)->withQueryString();
+
+        $counts = DB::table('products')->where('USERS_ID', $this->sid())
+            ->selectRaw('COUNT(*) as total, COALESCE(SUM(PRODUCTS_STATUS_DEL = 0), 0) as active, COALESCE(SUM(PRODUCTS_STATUS_DEL = 1), 0) as inactive')
+            ->first();
+
+        return view('seller.products', compact('products', 'q', 'status', 'counts'));
+    }
+
+    /** Edit = halaman Upload yang sama, sudah terisi data produk. */
+    public function productEdit(string $id)
+    {
+        $product = $this->ownedProduct($id);
+
+        $categories = DB::table('categories')->where('CATEGORIES_STATUS_DEL', 0)->orderBy('CATEGORIES_NAME')->get();
+
+        $images = DB::table('product_images')->where('PRODUCTS_ID', $id)->where('PRODUCT_IMAGES_STATUS_DEL', 0)
+            ->orderBy('PRODUCT_IMAGES_ID')->get()
+            ->map(fn($i) => [
+                'id' => (int) $i->PRODUCT_IMAGES_ID,
+                'url' => asset('storage/' . $i->PRODUCT_IMAGES_URL),
+                'primary' => (bool) $i->PRODUCT_IMAGES_IS_PRIMARY
+            ])->values();
+
+        $chart = json_decode($product->PRODUCTS_SIZE_CHART ?? '', true);
+        $sizeChart = (is_array($chart) && isset($chart['columns'], $chart['rows'])) ? $chart : null;
+
+        $imgW = self::IMG_W;
+        $imgH = self::IMG_H;
+        return view('seller.upload', compact('product', 'categories', 'images', 'sizeChart', 'imgW', 'imgH'));
+    }
+
+    public function productUpdate(Request $r, string $id)
+    {
+        $this->ownedProduct($id);
+        $d = $this->validateProduct($r, true);
+
+        $removeIds = array_map('intval', $d['remove_images'] ?? []);
+        $newFiles  = $r->file('images') ?? [];
+
+        DB::transaction(function () use ($id, $d, $removeIds, $newFiles) {
+            $now = now();
+            $current = DB::table('product_images')->where('PRODUCTS_ID', $id)->where('PRODUCT_IMAGES_STATUS_DEL', 0)->get();
+            $keep = $current->reject(fn($i) => in_array((int) $i->PRODUCT_IMAGES_ID, $removeIds, true));
+
+            $total = $keep->count() + count($newFiles);
+            if ($total < 1 || $total > 5) {
+                throw ValidationException::withMessages(['images' => 'A product needs 1 to 5 photos.']);
+            }
+
+            // foto yang dibuang
+            foreach ($current->filter(fn($i) => in_array((int) $i->PRODUCT_IMAGES_ID, $removeIds, true)) as $img) {
+                Storage::disk('public')->delete($img->PRODUCT_IMAGES_URL);
+                DB::table('product_images')->where('PRODUCT_IMAGES_ID', $img->PRODUCT_IMAGES_ID)
+                    ->update(['PRODUCT_IMAGES_STATUS_DEL' => 1, 'PRODUCT_IMAGES_IS_PRIMARY' => 0, 'updated_at' => $now]);
+            }
+
+            // foto baru
+            foreach ($newFiles as $file) {
+                DB::table('product_images')->insert([
+                    'PRODUCTS_ID' => $id,
+                    'PRODUCT_IMAGES_URL' => $file->store('products', 'public'),
+                    'PRODUCT_IMAGES_IS_PRIMARY' => 0,
+                    'PRODUCT_IMAGES_STATUS_DEL' => 0,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
+            // foto utama: pilihan seller -> yang sudah ditandai -> foto pertama
+            $ids = DB::table('product_images')->where('PRODUCTS_ID', $id)->where('PRODUCT_IMAGES_STATUS_DEL', 0)
+                ->orderBy('PRODUCT_IMAGES_ID')->pluck('PRODUCT_IMAGES_ID')->map(fn($x) => (int) $x)->all();
+            $flagged = $keep->first(fn($i) => (int) $i->PRODUCT_IMAGES_IS_PRIMARY === 1);
+            $primary = (isset($d['primary_image']) && in_array((int) $d['primary_image'], $ids, true))
+                ? (int) $d['primary_image']
+                : ($flagged ? (int) $flagged->PRODUCT_IMAGES_ID : $ids[0]);
+
+            DB::table('product_images')->where('PRODUCTS_ID', $id)->where('PRODUCT_IMAGES_STATUS_DEL', 0)
+                ->update(['PRODUCT_IMAGES_IS_PRIMARY' => 0]);
+            DB::table('product_images')->where('PRODUCT_IMAGES_ID', $primary)->update(['PRODUCT_IMAGES_IS_PRIMARY' => 1]);
+
+            DB::table('products')->where('PRODUCTS_ID', $id)->update($this->productPayload($d) + ['updated_at' => $now]);
+        });
+
+        return redirect()->route('seller.products')->with('success', 'Product updated.');
+    }
+
+    /** Inactivate <-> Restore (soft: PRODUCTS_STATUS_DEL 1/0). Produk nonaktif hilang dari katalog & keranjang. */
+    public function productToggle(string $id)
+    {
+        $p = $this->ownedProduct($id);
+        $inactive = (int) $p->PRODUCTS_STATUS_DEL === 1;
+
+        DB::table('products')->where('PRODUCTS_ID', $id)
+            ->update(['PRODUCTS_STATUS_DEL' => $inactive ? 0 : 1, 'updated_at' => now()]);
+
+        return back()->with('success', $inactive
+            ? 'Product restored and visible in the shop again.'
+            : 'Product inactivated. It is hidden from the shop and can be restored anytime.');
     }
 
     /* ===================== PROFILE ===================== */

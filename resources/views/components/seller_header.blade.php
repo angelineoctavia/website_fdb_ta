@@ -1,6 +1,6 @@
 <header class="sh">
     <div class="sh-left">
-        {{-- file logo: public/images/UC_LOGO_WARNA.png (ganti ekstensi kalau beda) --}}
+        {{-- file logo: public/images/UC_LOGO_WARNA.png --}}
         <img class="sh-logo" src="{{ asset('images/UC_LOGO_WARNA.png') }}" alt="Universitas Ciputra">
         <span class="sh-divider"></span>
         <a class="sh-brand" href="{{ route('seller.dashboard') }}">MADE BY PIDIZ</a>
@@ -11,6 +11,11 @@
             class="{{ request()->routeIs('seller.dashboard') ? 'active' : '' }}">Dashboard</a>
         <a href="{{ route('seller.upload') }}"
             class="{{ request()->routeIs('seller.upload*') ? 'active' : '' }}">Upload</a>
+
+        {{-- Menu My Products untuk Seller melakukan CRUD dan lihat list produk sendiri --}}
+        <a href="{{ route('seller.products') }}" class="{{ request()->routeIs('seller.products*') ? 'active' : '' }}">My
+            Products</a>
+
         <a href="{{ route('seller.orders') }}"
             class="{{ request()->routeIs('seller.orders*') ? 'active' : '' }}">Orders</a>
         <a href="{{ route('seller.profile') }}"

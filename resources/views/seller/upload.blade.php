@@ -1,4 +1,5 @@
 @extends('layouts.seller')
+@section('title', isset($product) ? 'Edit Product' : 'Upload')
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
@@ -6,6 +7,12 @@
 
 @section('content')
     @include('seller.styles')
+    @php
+        // Halaman ini dipakai untuk Upload (tanpa $product) dan Edit (dengan $product).
+        $isEdit = isset($product) && $product;
+        $val = fn($key, $default = '') => $isEdit ? $product->{$key} ?? $default : $default;
+        $readyType = (int) old('ready_type', $val('PRODUCTS_READY_TYPE', 1));
+    @endphp
     <style>
         .sc-sm {
             background: #f0508c;
@@ -28,6 +35,12 @@
 
         #scBox .sc-table th {
             padding: 6px
+        }
+
+        .sc-input:disabled {
+            background: #f1f1f1;
+            color: #999;
+            cursor: not-allowed
         }
 
         #dz {
@@ -65,7 +78,6 @@
 
         .slot button {
             position: absolute;
-            top: 3px;
             border: 0;
             background: rgba(0, 0, 0, .65);
             color: #fff;
@@ -79,11 +91,19 @@
         }
 
         .slot .sl-del {
+            top: 3px;
             right: 3px
         }
 
         .slot .sl-edit {
+            top: 3px;
             left: 3px
+        }
+
+        .slot .sl-star {
+            top: 27px;
+            right: 3px;
+            background: rgba(200, 16, 74, .85)
         }
 
         .slot em {
@@ -179,22 +199,28 @@
             display: none
         }
     </style>
+
     <div class="sc-wrap">
-        <h3 style="margin:0 0 12px">Upload</h3>
-        <form method="POST" action="{{ route('seller.upload.process') }}" enctype="multipart/form-data" class="sc-card"
-            id="uform">
+        <h3 style="margin:0 0 12px">{{ $isEdit ? 'Edit Product' : 'Upload' }}</h3>
+        <form method="POST"
+            action="{{ $isEdit ? route('seller.products.update', $product->PRODUCTS_ID) : route('seller.upload.process') }}"
+            enctype="multipart/form-data" class="sc-card" id="uform">
             @csrf
+            @if ($isEdit)
+                @method('PUT')
+            @endif
+
             <div class="sc-split">
                 <div>
                     <label class="sc-label">Product Name</label>
-                    <input class="sc-input" name="name" value="{{ old('name') }}" required>
+                    <input class="sc-input" name="name" value="{{ old('name', $val('PRODUCTS_NAME')) }}" required>
 
                     <label class="sc-label">Category</label>
                     <select class="sc-input" name="category" required>
                         <option value="">-- pilih --</option>
                         @foreach ($categories as $c)
-                            <option value="{{ $c->CATEGORIES_ID }}" @selected(old('category') == $c->CATEGORIES_ID)>{{ $c->CATEGORIES_NAME }}
-                            </option>
+                            <option value="{{ $c->CATEGORIES_ID }}" @selected(old('category', $val('CATEGORIES_ID')) == $c->CATEGORIES_ID)>
+                                {{ $c->CATEGORIES_NAME }}</option>
                         @endforeach
                     </select>
 
@@ -202,36 +228,38 @@
                     <select class="sc-input" name="gender" required>
                         <option value="">-- pilih --</option>
                         @foreach (['Women', 'Men', 'Unisex'] as $g)
-                            <option @selected(old('gender') == $g)>{{ $g }}</option>
+                            <option @selected(old('gender', $val('PRODUCTS_GENDER')) == $g)>{{ $g }}</option>
                         @endforeach
                     </select>
 
                     <label class="sc-label">Price (IDR)</label>
-                    <input class="sc-input" type="number" min="0" name="price" value="{{ old('price') }}"
-                        required>
+                    <input class="sc-input" type="number" min="0" name="price"
+                        value="{{ old('price', $isEdit ? (int) $product->PRODUCTS_PRICE : '') }}" required>
 
-                    <label class="sc-label">Stock</label>
-                    <input class="sc-input" type="number" min="0" name="stock" value="{{ old('stock') }}"
-                        required>
-
-                    <label class="sc-label">Material (opsional)</label>
-                    <input class="sc-input" name="material" value="{{ old('material') }}">
-
+                    {{-- Tipe tepat di bawah Price --}}
                     <label class="sc-label">Tipe</label>
                     <select class="sc-input" name="ready_type" id="ready_type">
-                        <option value="1" @selected(old('ready_type', 1) == 1)>Ready Stock</option>
-                        <option value="2" @selected(old('ready_type') == 2)>Pre-Order</option>
+                        <option value="1" @selected($readyType === 1)>Ready Stock</option>
+                        <option value="2" @selected($readyType === 2)>Pre-Order</option>
                     </select>
-                    <div id="po" style="display:none">
-                        <label class="sc-label">Lama Pre-Order (hari)</label>
-                        <input class="sc-input" type="number" min="1" name="preorder_days"
-                            value="{{ old('preorder_days') }}">
-                    </div>
+
+                    {{-- Ready Stock: Stock aktif, Days nonaktif. Pre-Order: kebalikannya (Stock dikunci). --}}
+                    <label class="sc-label">Stock</label>
+                    <input class="sc-input" type="number" min="0" name="stock" id="stockInput"
+                        value="{{ old('stock', $isEdit ? (int) $product->PRODUCTS_STOCK : '') }}">
+                    <div class="ic-note" id="stockHint" style="margin:4px 0 0"></div>
+
+                    <label class="sc-label">Days (lama Pre-Order)</label>
+                    <input class="sc-input" type="number" min="1" name="preorder_days" id="daysInput"
+                        value="{{ old('preorder_days', $val('PRODUCTS_PREORDER_DURATION')) }}">
+
+                    <label class="sc-label">Material (opsional)</label>
+                    <input class="sc-input" name="material" value="{{ old('material', $val('PRODUCTS_MATERIAL')) }}">
                 </div>
 
                 <div>
                     <label class="sc-label">Product Description</label>
-                    <textarea class="sc-input" name="description" rows="6">{{ old('description') }}</textarea>
+                    <textarea class="sc-input" name="description" rows="6">{{ old('description', $val('PRODUCTS_DESCRIPTION')) }}</textarea>
 
                     <label class="sc-label">Images (Max. 5) — gambar pertama jadi foto utama</label>
                     <div class="ic-note">Semua foto harus berrasio <b>3:4 (portrait)</b>, hasil akhir
@@ -239,7 +267,8 @@
                         Setelah memilih foto, atur lewat <b>Crop</b> (geser &amp; zoom), <b>Fit</b> (seluruh foto masuk,
                         sisi sisa putih),
                         atau <b>Stretch</b> (seluruh foto ditarik memenuhi bingkai, bisa terlihat melar). Klik ✎ pada foto
-                        untuk mengatur ulang.</div>
+                        baru untuk mengatur ulang{{ $isEdit ? ', ★ untuk menjadikan foto lama sebagai foto utama' : '' }}.
+                    </div>
                     <div id="dz">
                         <div style="font-size:26px">⬆️</div>
                         drag and drop files here<br>or<br>
@@ -252,8 +281,10 @@
                             <div class="slot">{{ $i }}</div>
                         @endfor
                     </div>
+                    <div id="imgHidden"></div>
                 </div>
             </div>
+
             <div style="margin-top:20px;border-top:1px solid #eee;padding-top:8px">
                 <label class="sc-label" style="font-weight:600">Size Chart <span
                         style="font-weight:400;color:#777">(opsional, boleh dikosongkan)</span></label>
@@ -267,7 +298,16 @@
                     (T-Shirt, Jacket, Outer, dst). Baris yang tidak diisi diabaikan.</div>
                 <input type="hidden" name="size_chart_json" id="size_chart_json">
             </div>
-            <div class="sc-actions"><button class="sc-btn">Publish</button></div>
+
+            <div class="sc-actions">
+                @if ($isEdit)
+                    <a href="{{ route('seller.products') }}" class="sc-ghost"
+                        style="text-decoration:none;display:inline-block;margin-right:8px">Cancel</a>
+                    <button class="sc-btn">Update</button>
+                @else
+                    <button class="sc-btn">Publish</button>
+                @endif
+            </div>
         </form>
     </div>
 
@@ -275,7 +315,8 @@
     <div id="icModal">
         <div class="ic-card">
             <b>Atur foto produk</b>
-            <div class="ic-note" style="margin-bottom:0">Rasio {{ $imgW }}:{{ $imgH }} (3:4). Geser &amp;
+            <div class="ic-note" style="margin-bottom:0">Rasio {{ $imgW }}:{{ $imgH }} (3:4). Geser
+                &amp;
                 zoom lalu <b>Crop</b>, atau pakai <b>Fit</b> / <b>Stretch</b> supaya seluruh foto masuk.</div>
             <div class="ic-stage"><img id="icImg" alt=""></div>
             <input type="range" id="icZoom" min="1" max="3" step="0.01" value="1"
@@ -293,6 +334,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script>
+        // ================= FOTO PRODUK =================
         (function() {
             const W = {{ $imgW }},
                 H = {{ $imgH }},
@@ -303,7 +345,16 @@
                 modal = document.getElementById('icModal'),
                 icImg = document.getElementById('icImg'),
                 zoom = document.getElementById('icZoom');
-            let items = []; // { orig: File, out: File, url }
+
+            // items: foto lama {kind:'old', id, url} (hanya saat Edit) atau foto baru {kind:'new', orig, out, url}
+            const existing = @json($images ?? []);
+            let items = existing.map(e => ({
+                kind: 'old',
+                id: e.id,
+                url: e.url
+            }));
+            let primaryId = (existing.find(e => e.primary) || {}).id ?? null;
+            let removed = []; // id foto lama yang dibuang
             let queue = []; // file menunggu diatur
             let cur = null; // { file, index } (index null = foto baru)
             let cropper = null,
@@ -312,10 +363,16 @@
 
             slots.forEach(s => s.style.aspectRatio = W + ' / ' + H);
 
+            function primaryIndex() {
+                const i = items.findIndex(it => it.kind === 'old' && it.id === primaryId);
+                return i >= 0 ? i : 0;
+            }
+
             function sync() {
                 const dt = new DataTransfer();
-                items.forEach(it => dt.items.add(it.out));
-                input.files = dt.files; // ikut ke-submit
+                items.filter(it => it.kind === 'new').forEach(it => dt.items.add(it.out));
+                input.files = dt.files; // hanya foto baru yang ikut ke-submit
+                const pIdx = primaryIndex();
                 slots.forEach((s, i) => {
                     s.replaceChildren();
                     const it = items[i];
@@ -326,24 +383,42 @@
                     const img = document.createElement('img');
                     img.src = it.url;
                     img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px';
+                    s.append(img);
+
                     const del = document.createElement('button');
                     del.type = 'button';
                     del.className = 'sl-del';
                     del.textContent = '×';
                     del.title = 'Hapus';
                     del.onclick = () => {
-                        URL.revokeObjectURL(it.url);
+                        if (it.kind === 'old') removed.push(it.id);
+                        else URL.revokeObjectURL(it.url);
                         items.splice(i, 1);
                         sync();
                     };
-                    const ed = document.createElement('button');
-                    ed.type = 'button';
-                    ed.className = 'sl-edit';
-                    ed.textContent = '✎';
-                    ed.title = 'Atur ulang';
-                    ed.onclick = () => openEditor(it.orig, i);
-                    s.append(img, del, ed);
-                    if (i === 0) {
+                    s.append(del);
+
+                    if (it.kind === 'new') {
+                        const ed = document.createElement('button');
+                        ed.type = 'button';
+                        ed.className = 'sl-edit';
+                        ed.textContent = '✎';
+                        ed.title = 'Atur ulang';
+                        ed.onclick = () => openEditor(it.orig, i);
+                        s.append(ed);
+                    } else if (i !== pIdx) {
+                        const st = document.createElement('button');
+                        st.type = 'button';
+                        st.className = 'sl-star';
+                        st.textContent = '★';
+                        st.title = 'Jadikan foto utama';
+                        st.onclick = () => {
+                            primaryId = it.id;
+                            sync();
+                        };
+                        s.append(st);
+                    }
+                    if (i === pIdx) {
                         const m = document.createElement('em');
                         m.textContent = 'utama';
                         s.append(m);
@@ -408,6 +483,7 @@
                 canvas.toBlob(blob => {
                     const name = (cur.file.name.replace(/\.[^.]+$/, '') || 'foto') + '.jpg';
                     const item = {
+                        kind: 'new',
                         orig: cur.file,
                         out: new File([blob], name, {
                             type: 'image/jpeg'
@@ -494,11 +570,29 @@
                 if (!items.length) {
                     e.preventDefault();
                     alert('Tambahkan minimal 1 foto produk.');
+                    return;
                 }
+                // kirim daftar foto lama yang dibuang + pilihan foto utama
+                const box = document.getElementById('imgHidden');
+                box.replaceChildren();
+                const hid = (n, v) => {
+                    const i = document.createElement('input');
+                    i.type = 'hidden';
+                    i.name = n;
+                    i.value = v;
+                    box.append(i);
+                };
+                removed.forEach(id => hid('remove_images[]', id));
+                const pi = items.findIndex(it => it.kind === 'old' && it.id === primaryId);
+                if (pi >= 0) hid('primary_image', primaryId);
             });
+
+            sync();
         })();
     </script>
+
     <script>
+        // ================= SIZE CHART =================
         (function() {
             const defaults = () => ({
                 columns: ['Bust', 'Length', 'Shoulder', 'Sleeve'],
@@ -507,7 +601,8 @@
                     values: ['', '', '', '']
                 }))
             });
-            let sc = defaults();
+            const saved = @json($sizeChart ?? null);
+            let sc = (saved && Array.isArray(saved.columns) && Array.isArray(saved.rows)) ? saved : defaults();
             const box = document.getElementById('scBox');
 
             const h = (tag, attrs = {}, ...kids) => {
@@ -546,7 +641,10 @@
                     h('th'));
                 const body = sc.rows.map((r, ri) => h('tr', {},
                     h('td', {}, inp(r.size, v => r.size = v, 'S', '60px')),
-                    ...sc.columns.map((_, j) => h('td', {}, inp(r.values[j], v => r.values[j] = v))),
+                    ...sc.columns.map((_, j) => h('td', {}, inp((r.values || [])[j], v => {
+                        r.values = r.values || [];
+                        r.values[j] = v;
+                    }))),
                     h('td', {}, x(() => {
                         sc.rows.splice(ri, 1);
                         render();
@@ -568,7 +666,7 @@
             };
             document.getElementById('scCol').onclick = () => {
                 sc.columns.push('');
-                sc.rows.forEach(r => r.values.push(''));
+                sc.rows.forEach(r => (r.values = r.values || []).push(''));
                 render();
             };
             document.getElementById('scReset').onclick = () => {
@@ -582,18 +680,49 @@
             render();
         })();
     </script>
+
     <script>
-        // Price, stock, dan lama pre-order: hanya angka bulat (type="number" bawaan browser masih menerima e, +, -, .)
-        document.querySelectorAll('input[name=price], input[name=stock], input[name=preorder_days]').forEach(el => {
-            el.step = '1';
-            el.inputMode = 'numeric';
-            el.addEventListener('keydown', e => {
-                if (['e', 'E', '+', '-', '.', ','].includes(e.key)) e.preventDefault();
+        // ================= PRICE / STOCK / DAYS + TIPE =================
+        (function() {
+            // Hanya angka bulat (type="number" bawaan browser masih menerima e, +, -, .)
+            document.querySelectorAll('input[name=price], input[name=stock], input[name=preorder_days]').forEach(el => {
+                el.step = '1';
+                el.inputMode = 'numeric';
+                el.addEventListener('keydown', e => {
+                    if (['e', 'E', '+', '-', '.', ','].includes(e.key)) e.preventDefault();
+                });
+                el.addEventListener('input', () => {
+                    el.value = el.value.replace(/\D/g, '');
+                });
+                el.addEventListener('wheel', () => el.blur()); // cegah angka berubah karena scroll mouse
             });
-            el.addEventListener('input', () => {
-                el.value = el.value.replace(/\D/g, '');
-            });
-            el.addEventListener('wheel', () => el.blur()); // cegah angka berubah karena scroll mouse
-        });
+
+            // Ready Stock <-> Pre-Order
+            const type = document.getElementById('ready_type'),
+                stock = document.getElementById('stockInput'),
+                days = document.getElementById('daysInput'),
+                hint = document.getElementById('stockHint');
+            let lastStock = stock.value;
+
+            function applyType() {
+                const pre = type.value === '2';
+                if (pre) {
+                    if (!stock.disabled) lastStock = stock.value;
+                    stock.value = '0';
+                } else if (stock.disabled) {
+                    stock.value = lastStock === '0' ? '' : lastStock;
+                }
+                stock.disabled = pre; // dikunci saat Pre-Order
+                stock.required = !pre;
+                days.disabled = !pre; // aktif hanya saat Pre-Order
+                days.required = pre;
+                if (!pre) days.value = '';
+                hint.textContent = pre ?
+                    'Stok dikunci untuk Pre-Order. Produk Pre-Order tidak bisa masuk keranjang, hanya wishlist.' :
+                    'Stok berkurang otomatis saat customer checkout.';
+            }
+            type.addEventListener('change', applyType);
+            applyType();
+        })();
     </script>
 @endsection

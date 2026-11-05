@@ -72,7 +72,7 @@ class CartController extends Controller
         }
 
         if (! $product->is_preorder && $qty > $product->PRODUCTS_STOCK) {
-            return back()->with('error', "Stok tidak cukup. Sisa {$product->PRODUCTS_STOCK} pcs.");
+            return back()->with('error', "Stock not enough. There is {$product->PRODUCTS_STOCK} pcs left.");
         }
 
         $line->update(['CARTS_DETAILS_QTY' => $qty]);
@@ -84,6 +84,6 @@ class CartController extends Controller
     {
         $this->ownedLine($id)->update(['CARTS_DETAILS_STATUS_DEL' => 1]);
 
-        return back()->with('success', 'Produk dihapus dari keranjang.');
+        return back()->with('success', 'Product removed from cart.');
     }
 }

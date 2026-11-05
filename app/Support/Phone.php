@@ -6,8 +6,8 @@ class Phone
 {
     /**
      * Format penyimpanan: 628xxxxxxxxx (wajib diawali 628).
-     * Menerima input: 628xx... (spasi, tanda strip, titik, dan kurung otomatis dibersihkan).
-     * Jika user memasukkan 08 atau format lain, akan dianggap tidak valid (null).
+     * Karakter non-angka (spasi, strip, titik, kurung, +) dibersihkan otomatis.
+     * Input berawalan 08 atau format lain dianggap tidak valid (null).
      */
     public static function normalize(?string $raw): ?string
     {
@@ -16,22 +16,16 @@ class Phone
             return null;
         }
 
-        // 2. Bersihkan karakter non-angka (spasi, strip, tanda kurung, titik, dll)
+        // 2. Bersihkan semua karakter non-angka
         $clean = preg_replace('/[^0-9]/', '', $raw);
 
-        // 3. Hitung total panjang angka
+        // 3. Validasi: wajib diawali 628, total panjang 11 sampai 15 digit
         $length = strlen($clean);
 
-        // 4. Validasi ketat:
-        //    - Wajib diawali dengan '628'
-        //    - Total panjang digit harus antara 11 sampai 14
-        $isStartWith628 = str_starts_with($clean, '628');
-        $isValidLength  = ($length >= 11 && $length <= 15);
-
-        if ($isStartWith628 && $isValidLength) {
-            return $clean; // Lolos dan valid!
+        if (str_starts_with($clean, '628') && $length >= 11 && $length <= 15) {
+            return $clean;
         }
 
-        return null; // Ditolak karena tidak pakai awalan 628
+        return null;
     }
 }

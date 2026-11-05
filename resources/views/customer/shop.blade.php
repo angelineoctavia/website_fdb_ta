@@ -110,6 +110,23 @@
             object-fit: cover
         }
 
+        .product-thumb.soldout img {
+            filter: grayscale(.6);
+            opacity: .75
+        }
+
+        .badge-soldout {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #333;
+            color: #fff;
+            border-radius: 99px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 600
+        }
+
         .product-info {
             padding: 8px 10px 10px;
             display: flex;
@@ -185,7 +202,7 @@
                 <div class="filter-group">
                     <label class="filter-title" for="brand">Brands</label>
                     <select name="brand" id="brand" class="filter-select" onchange="this.form.submit()">
-                        <option value="">Semua Brand</option>
+                        <option value="">All Brands</option>
                         @foreach ($brands as $b)
                             <option value="{{ $b->USERS_ID }}" @selected($selected['brand'] == $b->USERS_ID)>{{ $b->name }}</option>
                         @endforeach
@@ -235,29 +252,34 @@
 
             @if ($q !== '')
                 <div class="search-info">
-                    <span>Hasil pencarian untuk <strong>"{{ $q }}"</strong> ({{ $products->total() }}
-                        produk)</span>
-                    <a href="{{ route('shop.index') }}">Hapus pencarian</a>
+                    <span>Search results for <strong>"{{ $q }}"</strong> ({{ $products->total() }}
+                        products)</span>
+                    <a href="{{ route('shop.index') }}">Clear search</a>
                 </div>
             @endif
 
             @if ($products->isEmpty())
                 <div class="empty-state">
-                    <p>Belum ada produk yang cocok.</p>
+                    <p>No matching products.</p>
                     <a href="{{ route('shop.index') }}" class="btn btn-red">Reset</a>
                 </div>
             @else
                 <div class="product-grid">
                     @foreach ($products as $p)
+                        {{-- 1 = Ready Stock, 2 = Pre-Order (accessor is_preorder di model Product) --}}
+                        @php $soldOut = !$p->is_preorder && (int) $p->PRODUCTS_STOCK <= 0; @endphp
                         <a href="{{ route('shop.show', $p->PRODUCTS_ID) }}" class="product-card">
-                            <div class="product-thumb">
+                            <div class="product-thumb {{ $soldOut ? 'soldout' : '' }}">
                                 @if ($p->cover_url)
                                     <img src="{{ $p->cover_url }}" alt="{{ $p->PRODUCTS_NAME }}" loading="lazy">
                                 @else
                                     <div class="img-placeholder">No Image</div>
                                 @endif
+
                                 @if ($p->is_preorder)
                                     <span class="badge-preorder">Pre-Order</span>
+                                @elseif ($soldOut)
+                                    <span class="badge-soldout">Sold Out</span>
                                 @endif
                             </div>
                             <div class="product-info">

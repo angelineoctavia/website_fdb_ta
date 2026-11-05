@@ -8,6 +8,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\MidtransController;
+use App\Http\Controllers\ProfileController;
 
 // 1. Akses awal langsung diarahkan ke Login
 Route::get('/', function () {
@@ -49,6 +52,16 @@ Route::middleware(['web', 'role:C'])->group(function () {
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/wishlist/{id}/to-cart', [WishlistController::class, 'toCart'])->name('wishlist.toCart');
     Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+
+    // Midtrans
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::post('/checkout/select', [CheckoutController::class, 'select'])->name('checkout.select');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/pay', [CheckoutController::class, 'pay'])->name('checkout.pay');
+    Route::get('/checkout/pay/{id}', [CheckoutController::class, 'resume'])->name('checkout.resume');
+    Route::get('/checkout/finish/{id}', [CheckoutController::class, 'finish'])->name('checkout.finish');
 });
 
 
@@ -64,6 +77,8 @@ Route::middleware(['web', 'role:S'])->prefix('seller')->group(function () {
     Route::get('/products/{id}/edit', [SellerController::class, 'productEdit'])->name('seller.products.edit');
     Route::put('/products/{id}', [SellerController::class, 'productUpdate'])->name('seller.products.update');
     Route::delete('/products/{id}', [SellerController::class, 'productDestroy'])->name('seller.products.destroy');
+    Route::patch('/products/{id}/toggle', [SellerController::class, 'productToggle'])->name('seller.products.toggle');
+
 
     Route::get('/orders', [SellerController::class, 'orders'])->name('seller.orders');
     Route::get('/orders/{id}', [SellerController::class, 'orderShow'])->name('seller.orders.show');   // View Details
@@ -88,3 +103,7 @@ Route::middleware(['web', 'role:A'])->prefix('admin')->group(function () {
 
     Route::get('/profile', [AdminController::class, 'profile'])->name('admin.profile');
 });
+
+// Midtrans
+// Webhook Midtrans: publik (tanpa login), diamankan signature
+Route::post('/midtrans/notification', [MidtransController::class, 'notification']);

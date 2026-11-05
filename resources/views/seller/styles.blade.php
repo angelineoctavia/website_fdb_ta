@@ -152,6 +152,46 @@
         margin-top: 16px
     }
 
+    .sc-pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #eee;
+        color: #555
+    }
+
+    .sc-pill.pending {
+        background: #fff4d6;
+        color: #8a6100
+    }
+
+    .sc-pill.paid {
+        background: #e0efff;
+        color: #0b5cad
+    }
+
+    .sc-pill.packing {
+        background: #efe3ff;
+        color: #6a2cc0
+    }
+
+    .sc-pill.shipping {
+        background: #d9f4f2;
+        color: #0b7a73
+    }
+
+    .sc-pill.completed {
+        background: #e7f6ec;
+        color: #1b7a3a
+    }
+
+    .sc-pill.cancelled {
+        background: #fde8e8;
+        color: #b42318
+    }
+
     @media(max-width:800px) {
 
         .sc-grid4,

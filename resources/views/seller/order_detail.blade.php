@@ -26,7 +26,7 @@
             <div class="sc-card">
                 <b>Pembayaran (Midtrans)</b>
                 <p style="margin:8px 0 0;font-size:13px">
-                    Metode: {{ $order->TRANSACTIONS_PAYMENT_METHOD ?: '-' }}<br>
+                    Metode: {{ $order->TRANSACTIONS_PAYMENT_METHOD ?? '-' }}<br>
                     Status: {{ in_array($st, ['pending', 'cancelled']) ? ucfirst($st) : 'Lunas' }}<br>
                     Tanggal: {{ \Carbon\Carbon::parse($order->TRANSACTIONS_DATE)->format('d M Y') }}
                 </p>

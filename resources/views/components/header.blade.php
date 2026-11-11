@@ -85,6 +85,15 @@
                 <a href="{{ route('seller.products') }}" class="nav-link">My Products</a>
             @endif
 
+            {{-- Customer: riwayat pesanan, nomor resi & status paket --}}
+            @if (!in_array($role, ['S', 'A'], true) && Route::has('customer.orders'))
+                <a href="{{ route('customer.orders') }}"
+                    class="icon-link {{ request()->is('my-orders*') ? 'active' : '' }}" aria-label="My Orders"
+                    title="My Orders">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </a>
+            @endif
+
             <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                 @csrf
                 <button type="submit" class="nav-link"

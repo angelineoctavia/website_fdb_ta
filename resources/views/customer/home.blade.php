@@ -98,6 +98,19 @@
             object-fit: cover;
         }
 
+        /* Seller yang belum punya logo: huruf awal nama brand */
+        .brand-initial {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fdf2f8;
+            color: #C20042;
+            font-size: 40px;
+            font-weight: 700;
+        }
+
         .brand-name {
             margin-top: 10px;
             font-size: 13px;
@@ -244,7 +257,7 @@
             onerror="this.src='https://via.placeholder.com/1200x420?text=Hero+Banner+Fashionology'">
     </section>
 
-    <!-- 2. FDB Student's Brands Section (mockup; tambah seller asli di sini nanti) -->
+    <!-- 2. FDB Student's Brands Section (dari database: seller aktif yang punya produk aktif) -->
     <section class="section-container">
         <h2 class="section-title">FDB STUDENTS' BRANDS</h2>
 
@@ -252,56 +265,21 @@
             <button class="slider-btn prev" onclick="scrollBrands(-1)">&#10094;</button>
 
             <div class="brands-grid" id="brandsContainer">
-
-                <div class="brand-item">
-                    <div class="brand-circle">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/Aveline.png') }}" alt="Aveline">
-                    </div>
-                    <span class="brand-name">Aveline</span>
-                </div>
-
-                <div class="brand-item">
-                    <div class="brand-circle">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/Liora_Atelier.png') }}" alt="Liora Atelier">
-                    </div>
-                    <span class="brand-name">Liora Atelier</span>
-                </div>
-
-                <div class="brand-item">
-                    <div class="brand-circle">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/Lunelle.png') }}" alt="Lunelle">
-                    </div>
-                    <span class="brand-name">Lunelle</span>
-                </div>
-
-                <div class="brand-item">
-                    <div class="brand-circle">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/Mora_Studio.png') }}" alt="Mora Studio">
-                    </div>
-                    <span class="brand-name">Mora Studio</span>
-                </div>
-
-                <div class="brand-item">
-                    <div class="brand-circle">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/NOVA.png') }}" alt="NOVA">
-                    </div>
-                    <span class="brand-name">NOVA</span>
-                </div>
-
-                <div class="brand-item">
-                    <div class="brand-circle">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/Serein_Bureau.png') }}" alt="Serein Bureau">
-                    </div>
-                    <span class="brand-name">Serein Bureau</span>
-                </div>
-
-                <div class="brand-item">
-                    <div class="brand-circle">
-                        <img src="{{ asset('images/Brand_Logo_Mockup/Vogue_Aviary.png') }}" alt="Vogue Aviary">
-                    </div>
-                    <span class="brand-name">Vogue Aviary</span>
-                </div>
-
+                @forelse ($brands as $b)
+                    <a href="{{ route('shop.index', ['brand' => $b->USERS_ID]) }}" class="brand-item"
+                        style="text-decoration:none">
+                        <div class="brand-circle">
+                            @if ($b->logo)
+                                <img src="{{ $b->logo }}" alt="{{ $b->USERS_NAME }}" loading="lazy">
+                            @else
+                                <span class="brand-initial">{{ strtoupper(mb_substr($b->USERS_NAME, 0, 1)) }}</span>
+                            @endif
+                        </div>
+                        <span class="brand-name">{{ $b->USERS_NAME }}</span>
+                    </a>
+                @empty
+                    <p class="home-empty">Belum ada brand.</p>
+                @endforelse
             </div>
 
             <button class="slider-btn next" onclick="scrollBrands(1)">&#10095;</button>
@@ -378,5 +356,15 @@
                 behavior: 'smooth'
             });
         }
+
+        // Sembunyikan tombol < > kalau brand sedikit dan tidak perlu digeser
+        window.addEventListener('load', function() {
+            const c = document.getElementById('brandsContainer');
+            if (c && c.scrollWidth <= c.clientWidth + 1) {
+                document.querySelectorAll('.slider-btn').forEach(function(b) {
+                    b.style.display = 'none';
+                });
+            }
+        });
     </script>
 @endpush

@@ -190,6 +190,9 @@
                                 <span>Brand: {{ $brands[$p->USERS_ID] ?? '-' }}</span><br>
                                 <span>Size: {{ $line->CARTS_DETAILS_SELECTED_SIZE ?: '-' }} &middot; Qty:
                                     {{ $line->CARTS_DETAILS_QTY }}</span>
+                                @if ($line->CARTS_DETAILS_CUSTOM_SIZE_NOTES)
+                                    <br><span>Custom: {{ $line->CARTS_DETAILS_CUSTOM_SIZE_NOTES }}</span>
+                                @endif
                                 @if ($p->is_preorder)
                                     <br><span style="color:var(--brand)">Pre-Order</span>
                                 @endif

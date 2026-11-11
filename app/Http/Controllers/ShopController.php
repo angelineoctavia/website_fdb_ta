@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ShopController extends Controller
 {
@@ -82,6 +83,9 @@ class ShopController extends Controller
             ->orderBy(Product::CATEGORY_NAME_COLUMN)
             ->get(['CATEGORIES_ID', DB::raw(Product::CATEGORY_NAME_COLUMN . ' as name')]);
 
+        // Header profil seller (hanya kalau sedang difilter per brand)
+        $seller = $brand ? $this->sellerProfile((string) $brand) : null;
+
         return view('customer.shop', [
             'products'      => $products,
             'brands'        => $brands,
@@ -89,6 +93,7 @@ class ShopController extends Controller
             'genderOptions' => self::GENDERS,
             'priceOptions'  => array_map(fn($r) => $r[0], self::PRICE_RANGES),
             'q'             => $q,
+            'seller'        => $seller,
             'selected'      => [
                 'brand'  => $brand,
                 'gender' => $genders,
@@ -123,21 +128,54 @@ class ShopController extends Controller
             ->where('PRODUCTS_ID', $product->PRODUCTS_ID)
             ->where('WISHLISTS_STATUS_DEL', 0)->exists();
 
-        $sellerBio = $seller->USERS_BIO ?? null;
-        $pic = $seller->USERS_PROFILE_PICTURE ?? null;
-        $sellerPhoto = $pic
-            ? (str_starts_with($pic, 'http') ? $pic : asset('storage/' . ltrim($pic, '/')))
-            : null;
-
         return view('customer.shop_detail', [
-            'product'      => $product,
-            'sellerName'   => $sellerName,
-            'sellerId'     => $product->USERS_ID,
-            'categoryName' => $categoryName,
-            'waLink'       => $waLink,
-            'inWishlist'   => $inWishlist,
-            'sellerBio'   => $sellerBio,
-            'sellerPhoto' => $sellerPhoto,
+            'product'          => $product,
+            'sellerName'       => $sellerName,
+            'sellerId'         => $product->USERS_ID,
+            'sellerPicture'    => $this->imageUrl($seller->USERS_PROFILE_PICTURE ?? null),
+            'sellerInstagram'  => $seller->USERS_INSTAGRAM ?? null,
+            'categoryName'     => $categoryName,
+            'waLink'           => $waLink,
+            'inWishlist'       => $inWishlist,
         ]);
+    }
+
+    /** Profil seller untuk header halaman Shop (null kalau seller tidak ketemu). */
+    private function sellerProfile(string $id): ?array
+    {
+        $u = DB::table('users')->where('USERS_ID', $id)->first();
+        if (! $u) {
+            return null;
+        }
+
+        $name = $u->{Product::SELLER_NAME_COLUMN} ?? 'Designer';
+        $ig   = $u->USERS_INSTAGRAM ?? null;
+
+        return [
+            'id'      => $id,
+            'name'    => $name,
+            'handle'  => '@' . ($ig ? ltrim($ig, '@') : Str::slug($name, '')),
+            'bio'     => $u->USERS_BIO ?? null,
+            'picture' => $this->imageUrl($u->USERS_PROFILE_PICTURE ?? null),
+            'count'   => Product::active()->where('USERS_ID', $id)->count(),
+        ];
+    }
+
+    /** Path gambar di DB -> URL siap pakai. */
+    private function imageUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+        if (file_exists(public_path($path))) {
+            return asset($path);
+        }
+
+        return asset('storage/' . preg_replace('#^storage/#', '', $path));
     }
 }

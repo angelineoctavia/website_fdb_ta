@@ -28,24 +28,40 @@ class CartService
         ]);
     }
 
-    /** @return array{0: bool, 1: string} [berhasil, pesan] */
-    public function add(string $userId, Product $product, ?string $size, int $qty = 1): array
+    /**
+     * Tambah ke keranjang. Stok TIDAK dikurangi di sini (baru dikurangi saat checkout).
+     * $customNotes hanya berlaku untuk produk Pre-Order -> size disimpan sebagai "Custom".
+     *
+     * @return array{0: bool, 1: string} [berhasil, pesan]
+     */
+    public function add(string $userId, Product $product, ?string $size, int $qty = 1, ?string $customNotes = null): array
     {
         if (! $product->is_preorder && $product->PRODUCTS_STOCK < 1) {
             return [false, 'Stok produk ini habis.'];
         }
 
-        $sizes = $product->sizes;
-        $size  = ($size && in_array($size, $sizes, true)) ? $size : $sizes[0];
+        $customNotes = trim((string) $customNotes);
+        if ($product->is_preorder && $customNotes !== '') {
+            $size = 'Custom';
+        } else {
+            $customNotes = '';
+            $sizes = $product->sizes;
+            $size  = ($size && in_array($size, $sizes, true)) ? $size : ($sizes[0] ?? null);
+        }
 
         $cart = $this->activeCart($userId);
 
-        $line = CartDetail::where('CARTS_ID', $cart->CARTS_ID)
+        $lineQuery = CartDetail::where('CARTS_ID', $cart->CARTS_ID)
             ->where('PRODUCTS_ID', $product->PRODUCTS_ID)
             ->where('CARTS_DETAILS_SELECTED_SIZE', $size)
-            ->where('CARTS_DETAILS_STATUS_DEL', 0)
-            ->first();
+            ->where('CARTS_DETAILS_STATUS_DEL', 0);
 
+        // ukuran custom dengan catatan berbeda = baris keranjang berbeda
+        $customNotes !== ''
+            ? $lineQuery->where('CARTS_DETAILS_CUSTOM_SIZE_NOTES', $customNotes)
+            : $lineQuery->whereNull('CARTS_DETAILS_CUSTOM_SIZE_NOTES');
+
+        $line   = $lineQuery->first();
         $newQty = ($line ? (int) $line->CARTS_DETAILS_QTY : 0) + $qty;
 
         if (! $product->is_preorder && $newQty > $product->PRODUCTS_STOCK) {
@@ -59,12 +75,13 @@ class CartService
             ]);
         } else {
             CartDetail::create([
-                'CARTS_ID'                    => $cart->CARTS_ID,
-                'PRODUCTS_ID'                 => $product->PRODUCTS_ID,
-                'CARTS_DETAILS_PRICE'         => $product->PRODUCTS_PRICE,
-                'CARTS_DETAILS_QTY'           => $qty,
-                'CARTS_DETAILS_SELECTED_SIZE' => $size,
-                'CARTS_DETAILS_STATUS_DEL'    => 0,
+                'CARTS_ID'                         => $cart->CARTS_ID,
+                'PRODUCTS_ID'                      => $product->PRODUCTS_ID,
+                'CARTS_DETAILS_PRICE'              => $product->PRODUCTS_PRICE,
+                'CARTS_DETAILS_QTY'                => $qty,
+                'CARTS_DETAILS_SELECTED_SIZE'      => $size,
+                'CARTS_DETAILS_CUSTOM_SIZE_NOTES'  => $customNotes !== '' ? $customNotes : null,
+                'CARTS_DETAILS_STATUS_DEL'         => 0,
             ]);
         }
 

@@ -42,6 +42,7 @@
         }
 
         .gallery-main {
+            position: relative;
             aspect-ratio: 3 / 4;
             background: #d9d9d9;
             border-radius: 6px;
@@ -52,6 +53,37 @@
             width: 100%;
             height: 100%;
             object-fit: cover
+        }
+
+        /* panah < > di galeri */
+        .gal-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 0;
+            background: rgba(0, 0, 0, .35);
+            color: #fff;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background .15s
+        }
+
+        .gal-btn:hover {
+            background: rgba(0, 0, 0, .55)
+        }
+
+        .gal-prev {
+            left: 8px
+        }
+
+        .gal-next {
+            right: 8px
         }
 
         .gallery-thumbs {
@@ -138,6 +170,67 @@
             border-color: var(--dark)
         }
 
+        /* ===== PANEL UKURAN CUSTOM ===== */
+        .custom-panel {
+            display: none;
+            margin-top: 12px;
+            padding: 14px;
+            border: 1px dashed #bbb;
+            border-radius: 10px;
+            background: #fafafa
+        }
+
+        .custom-panel.open {
+            display: block
+        }
+
+        .custom-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px
+        }
+
+        .custom-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 14px
+        }
+
+        .custom-field label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 3px
+        }
+
+        .custom-field input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            background: #fff;
+            outline: none
+        }
+
+        .custom-field input:focus {
+            border-color: var(--brand)
+        }
+
+        .custom-wa {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1b9c4a
+        }
+
+        .custom-hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 8px
+        }
+
         .detail-desc {
             line-height: 1.6;
             color: #444;
@@ -183,9 +276,56 @@
             margin: 0
         }
 
+        .add-form {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
         .detail-actions .btn[disabled] {
             opacity: .45;
             cursor: not-allowed
+        }
+
+        /* stepper - 1 + */
+        .qty-box {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 38px;
+            border: 0;
+            background: #fff;
+            font-size: 16px;
+            cursor: pointer
+        }
+
+        .qty-btn:hover {
+            background: #f0f0f0
+        }
+
+        .qty-box input {
+            width: 40px;
+            height: 38px;
+            border: 0;
+            border-left: 1px solid #eee;
+            border-right: 1px solid #eee;
+            text-align: center;
+            font-size: 13px;
+            background: #fff;
+            -moz-appearance: textfield
+        }
+
+        .qty-box input::-webkit-outer-spin-button,
+        .qty-box input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0
         }
 
         .designer-card {
@@ -206,6 +346,23 @@
             margin-bottom: 14px
         }
 
+        /* foto + nama bisa diklik -> halaman seller di Shop */
+        .designer-link {
+            display: block;
+            color: inherit
+        }
+
+        .designer-link:hover .designer-name {
+            color: var(--brand)
+        }
+
+        .designer-visit {
+            display: inline-block;
+            font-size: 11px;
+            color: var(--brand);
+            margin-bottom: 14px
+        }
+
         .designer-avatar {
             display: block;
             width: 84px;
@@ -222,27 +379,19 @@
 
         .designer-handle {
             color: var(--muted);
-            margin-bottom: 14px
+            margin-bottom: 6px
         }
 
         .designer-buttons {
             display: grid;
             grid-template-columns: 1fr;
             gap: 8px;
-            margin-bottom: 14px
+            margin-bottom: 18px
         }
 
         .designer-buttons .btn {
             padding: 8px 6px;
             font-size: 12px
-        }
-
-        .designer-bio {
-            text-align: left;
-            line-height: 1.6;
-            color: #444;
-            white-space: pre-line;
-            margin-bottom: 18px
         }
 
         .size-chart table {
@@ -298,16 +447,25 @@
 @section('content')
     @php
         // Pre-Order / Ready dibaca dari products.PRODUCTS_READY_TYPE lewat accessor model Product
-        // (satu sumber yang sama dengan halaman shop & cart).
         $isPreorder = $product->is_preorder;
         $stock = (int) $product->PRODUCTS_STOCK;
         $loggedIn = session()->has('user_id');
         $isCustomer = session('user_role') === 'C';
+        $shopUrl = route('shop.index', ['brand' => $product->USERS_ID]);
 
         // Size chart format baru: {"columns":[...],"rows":[{"size":"S","values":[...]}]}
         $chart = json_decode($product->PRODUCTS_SIZE_CHART ?? '', true);
         $newChart = is_array($chart) && !empty($chart['rows']) && isset($chart['columns']);
         $sizes = $newChart ? collect($chart['rows'])->pluck('size')->filter()->values()->all() : $product->sizes;
+
+        // Kolom ukuran custom: ikut kolom size chart seller, kalau tidak ada pakai default
+        $customFields = $newChart ? $chart['columns'] : ['Bust', 'Length', 'Shoulder', 'Sleeve'];
+
+        // Batas jumlah: ready stock = sisa stok, pre-order = bebas (maks 99)
+        $maxQty = $isPreorder ? 99 : max(1, $stock);
+
+        // Link WhatsApp tanpa teks bawaan (teks custom dirakit di JS)
+        $waBase = $waLink ? strtok($waLink, '?') : null;
     @endphp
 
     <div class="detail-page">
@@ -325,6 +483,15 @@
                             <img id="main-image" src="{{ $product->cover_url }}" alt="{{ $product->PRODUCTS_NAME }}">
                         @else
                             <div class="img-placeholder">No Image</div>
+                        @endif
+
+                        @if ($product->images->count() > 1)
+                            <button type="button" class="gal-btn gal-prev" id="gal-prev" aria-label="Previous image">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button type="button" class="gal-btn gal-next" id="gal-next" aria-label="Next image">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
                         @endif
                     </div>
 
@@ -358,7 +525,35 @@
                                 <button type="button" class="size-btn {{ $i === 0 ? 'selected' : '' }}"
                                     data-size="{{ $size }}">{{ $size }}</button>
                             @endforeach
+
+                            @if ($isPreorder)
+                                <button type="button" class="size-btn" id="custom-btn" data-size="Custom">Custom</button>
+                            @endif
                         </div>
+
+                        @if ($isPreorder)
+                            <div class="custom-panel" id="custom-panel">
+                                <p class="custom-title">Custom size (cm)</p>
+                                <div class="custom-grid">
+                                    @foreach ($customFields as $field)
+                                        <div class="custom-field">
+                                            <label>{{ $field }}</label>
+                                            {{-- hanya angka (dan satu titik desimal) --}}
+                                            <input type="text" inputmode="decimal" class="custom-input"
+                                                data-label="{{ $field }}" placeholder="cm" maxlength="6"
+                                                autocomplete="off">
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <p class="custom-hint">Isi semua ukuran dengan angka, lalu Add To Cart. Atau diskusikan
+                                    dulu dengan designer.</p>
+                                @if ($waBase)
+                                    <a href="#" id="custom-wa" class="custom-wa" target="_blank" rel="noopener">
+                                        <i class="fa-brands fa-whatsapp"></i> Continue via WhatsApp
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
                     <div class="detail-block">
@@ -387,32 +582,39 @@
 
                     <div class="detail-actions">
                         @if ($loggedIn && $isCustomer)
-                            @if ($isPreorder)
-                                {{-- Pre-Order: tidak bisa masuk keranjang, hanya wishlist --}}
-                                <button type="button" class="btn btn-dark" disabled>Pre-Order</button>
-                            @else
-                                <form method="POST" action="{{ route('cart.store') }}">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
-                                    <input type="hidden" name="size" id="selected-size" value="{{ $sizes[0] ?? '' }}">
-                                    <button type="submit" class="btn btn-dark" @disabled($stock <= 0)>
-                                        {{ $stock <= 0 ? 'Out of Stock' : 'Add To Cart' }}
-                                    </button>
-                                </form>
-                            @endif
+                            <form method="POST" action="{{ route('cart.store') }}" class="add-form" id="add-form">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
+                                <input type="hidden" name="size" id="selected-size" value="{{ $sizes[0] ?? '' }}">
+                                <input type="hidden" name="custom_notes" id="custom-notes" value="">
+
+                                @if ($isPreorder || $stock > 0)
+                                    <div class="qty-box">
+                                        <button type="button" class="qty-btn" data-d="-1"
+                                            aria-label="Decrease">&minus;</button>
+                                        <input type="number" name="qty" id="qty" value="1" min="1"
+                                            max="{{ $maxQty }}" readonly>
+                                        <button type="button" class="qty-btn" data-d="1"
+                                            aria-label="Increase">+</button>
+                                    </div>
+                                @endif
+
+                                <button type="submit" class="btn btn-dark" @disabled(!$isPreorder && $stock <= 0)>
+                                    {{ !$isPreorder && $stock <= 0 ? 'Out of Stock' : 'Add To Cart' }}
+                                </button>
+                            </form>
 
                             <form method="POST" action="{{ route('wishlist.toggle') }}">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->PRODUCTS_ID }}">
-                                <button type="submit" class="btn-icon {{ $inWishlist ? 'on' : '' }}" aria-label="Wishlist"
+                                <button type="submit" class="btn-icon {{ $inWishlist ? 'on' : '' }}"
+                                    aria-label="Wishlist"
                                     title="{{ $inWishlist ? 'Remove from wishlist' : 'Add to wishlist' }}">
                                     <i class="{{ $inWishlist ? 'fa-solid' : 'fa-regular' }} fa-heart"></i>
                                 </button>
                             </form>
                         @elseif (!$loggedIn)
-                            @unless ($isPreorder)
-                                <a href="{{ route('login') }}" class="btn btn-dark">Login to Add To Cart</a>
-                            @endunless
+                            <a href="{{ route('login') }}" class="btn btn-dark">Login to Add To Cart</a>
                             <a href="{{ route('login') }}" class="btn-icon" aria-label="Wishlist"><i
                                     class="fa-regular fa-heart"></i></a>
                         @endif
@@ -420,8 +622,10 @@
                     </div>
 
                     @if ($isPreorder)
-                        <p class="detail-note">Pre-Order products can't be added to the cart. Save it to your wishlist or
-                            contact the designer via WhatsApp.</p>
+                        <p class="detail-note">This is a Pre-Order item. It will be produced after you order, so please
+                            allow the estimated production time before it ships. Need a different fit? Choose
+                            <strong>Custom</strong> and enter your measurements.
+                        </p>
                     @endif
                 </div>
             </div>
@@ -430,15 +634,19 @@
             <aside class="designer-card">
                 <h3>Designer Profile</h3>
 
-                @if (!empty($sellerPicture))
-                    <img class="designer-avatar" src="{{ $sellerPicture }}" alt="{{ $sellerName }}">
-                @else
-                    <div class="designer-avatar"></div>
-                @endif
-                <p class="designer-name">{{ $sellerName }}</p>
-                <p class="designer-handle">
-                    {{ '@' . (!empty($sellerInstagram) ? ltrim($sellerInstagram, '@') : \Illuminate\Support\Str::slug($sellerName, '')) }}
-                </p>
+                {{-- klik foto / nama -> halaman seller (Shop terfilter + bio) --}}
+                <a href="{{ $shopUrl }}" class="designer-link" title="View all products from {{ $sellerName }}">
+                    @if (!empty($sellerPicture))
+                        <img class="designer-avatar" src="{{ $sellerPicture }}" alt="{{ $sellerName }}">
+                    @else
+                        <div class="designer-avatar"></div>
+                    @endif
+                    <p class="designer-name">{{ $sellerName }}</p>
+                    <p class="designer-handle">
+                        {{ '@' . (!empty($sellerInstagram) ? ltrim($sellerInstagram, '@') : \Illuminate\Support\Str::slug($sellerName, '')) }}
+                    </p>
+                </a>
+                <a href="{{ $shopUrl }}" class="designer-visit">Visit shop &rsaquo;</a>
 
                 <div class="designer-buttons">
                     @if ($waLink)
@@ -447,10 +655,6 @@
                         <span class="btn btn-wa disabled">WhatsApp</span>
                     @endif
                 </div>
-
-                @if (!empty($sellerBio))
-                    <p class="designer-bio">{{ $sellerBio }}</p>
-                @endif
 
                 <div class="size-chart">
                     @if ($newChart)
@@ -511,25 +715,129 @@
 
 @push('scripts')
     <script>
-        document.querySelectorAll('.thumb').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.getElementById('main-image').src = btn.dataset.src;
-                document.querySelectorAll('.thumb').forEach(function(t) {
+        (function() {
+            /* ===== GALERI: thumbnail + panah < > ===== */
+            var main = document.getElementById('main-image');
+            var thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+            var cur = 0;
+
+            function showImage(i) {
+                if (!thumbs.length || !main) return;
+                cur = (i + thumbs.length) % thumbs.length;
+                main.src = thumbs[cur].dataset.src;
+                thumbs.forEach(function(t) {
                     t.classList.remove('active');
                 });
-                btn.classList.add('active');
-            });
-        });
+                thumbs[cur].classList.add('active');
+            }
 
-        document.querySelectorAll('.size-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.size-btn').forEach(function(b) {
-                    b.classList.remove('selected');
+            thumbs.forEach(function(btn, i) {
+                btn.addEventListener('click', function() {
+                    showImage(i);
                 });
-                btn.classList.add('selected');
-                var hidden = document.getElementById('selected-size');
-                if (hidden) hidden.value = btn.dataset.size;
+                if (main && btn.dataset.src === main.src) {
+                    cur = i;
+                    btn.classList.add('active');
+                }
             });
-        });
+
+            var prev = document.getElementById('gal-prev');
+            var next = document.getElementById('gal-next');
+            if (prev) prev.addEventListener('click', function() {
+                showImage(cur - 1);
+            });
+            if (next) next.addEventListener('click', function() {
+                showImage(cur + 1);
+            });
+
+            /* ===== PILIH UKURAN + CUSTOM ===== */
+            var sizeBtns = document.querySelectorAll('.size-btn');
+            var hiddenSize = document.getElementById('selected-size');
+            var panel = document.getElementById('custom-panel');
+            var inputs = Array.prototype.slice.call(document.querySelectorAll('.custom-input'));
+            var isCustom = false;
+
+            // Input custom: hanya angka dan satu titik desimal (koma otomatis jadi titik)
+            inputs.forEach(function(inp) {
+                inp.addEventListener('input', function() {
+                    var v = inp.value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+                    var p = v.split('.');
+                    if (p.length > 2) v = p[0] + '.' + p.slice(1).join('');
+                    inp.value = v;
+                });
+            });
+
+            sizeBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    sizeBtns.forEach(function(b) {
+                        b.classList.remove('selected');
+                    });
+                    btn.classList.add('selected');
+
+                    isCustom = btn.dataset.size === 'Custom';
+                    if (panel) panel.classList.toggle('open', isCustom);
+                    if (hiddenSize) hiddenSize.value = btn.dataset.size;
+                });
+            });
+
+            function customText() {
+                return inputs.map(function(i) {
+                    return i.dataset.label + ': ' + i.value.trim() + ' cm';
+                }).join(', ');
+            }
+
+            // Continue via WhatsApp: rakit pesan dari ukuran yang sudah diisi
+            var wa = document.getElementById('custom-wa');
+            if (wa) {
+                wa.addEventListener('click', function() {
+                    var filled = inputs.filter(function(i) {
+                        return i.value.trim() !== '';
+                    });
+                    var msg =
+                        'Halo, saya tertarik dengan produk {{ addslashes($product->PRODUCTS_NAME) }} (Pre-Order) dan ingin memesan dengan ukuran custom.';
+                    if (filled.length) {
+                        msg += '\nUkuran saya: ' + filled.map(function(i) {
+                            return i.dataset.label + ' ' + i.value.trim() + ' cm';
+                        }).join(', ') + '.';
+                    }
+                    wa.href = "{{ $waBase }}?text=" + encodeURIComponent(msg);
+                });
+            }
+
+            /* ===== STEPPER - 1 + ===== */
+            var qty = document.getElementById('qty');
+            document.querySelectorAll('.qty-btn').forEach(function(b) {
+                b.addEventListener('click', function() {
+                    if (!qty) return;
+                    var v = parseInt(qty.value, 10) + parseInt(b.dataset.d, 10);
+                    var max = parseInt(qty.max, 10);
+                    qty.value = Math.min(Math.max(v, 1), max);
+                });
+            });
+
+            /* ===== SUBMIT: kalau Custom, semua ukuran wajib berupa angka ===== */
+            var form = document.getElementById('add-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    var notes = document.getElementById('custom-notes');
+                    if (!isCustom) {
+                        notes.value = '';
+                        return;
+                    }
+
+                    var invalid = inputs.filter(function(i) {
+                        var v = i.value.trim();
+                        return !/^\d+(\.\d{1,2})?$/.test(v) || parseFloat(v) <= 0;
+                    });
+                    if (invalid.length) {
+                        e.preventDefault();
+                        invalid[0].focus();
+                        alert('Isi semua ukuran custom dengan angka (cm).');
+                        return;
+                    }
+                    notes.value = customText();
+                });
+            }
+        })();
     </script>
 @endpush

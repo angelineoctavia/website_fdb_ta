@@ -46,14 +46,21 @@ class CartController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'product_id' => ['required', 'string', 'max:8'],
-            'size'       => ['nullable', 'string', 'max:6'],
-            'qty'        => ['nullable', 'integer', 'min:1', 'max:99'],
+            'product_id'   => ['required', 'string', 'max:8'],
+            'size'         => ['nullable', 'string', 'max:6'],
+            'qty'          => ['nullable', 'integer', 'min:1', 'max:99'],
+            'custom_notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $product = Product::active()->findOrFail($data['product_id']);
 
-        [$ok, $msg] = $this->carts->add($this->uid(), $product, $data['size'] ?? null, (int) ($data['qty'] ?? 1));
+        [$ok, $msg] = $this->carts->add(
+            $this->uid(),
+            $product,
+            $data['size'] ?? null,
+            (int) ($data['qty'] ?? 1),
+            $data['custom_notes'] ?? null
+        );
 
         return back()->with($ok ? 'success' : 'error', $msg);
     }

@@ -45,6 +45,26 @@ class HomeController extends Controller
             ->sortBy(fn($p) => array_search($p->PRODUCTS_ID, $topIds))
             ->values();
 
-        return view('customer.home', compact('newArrivals', 'bestSellers'));
+        // FDB Students' Brands: seller aktif yang punya minimal 1 produk aktif.
+        // Yang sudah punya logo (foto profil) tampil duluan.
+        $brands = DB::table('users as u')
+            ->where('u.USERS_ROLE', 'S')
+            ->where('u.USERS_STATUS_DEL', 0)
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('products as p')
+                    ->whereColumn('p.USERS_ID', 'u.USERS_ID')
+                    ->where('p.PRODUCTS_STATUS_DEL', 0);
+            })
+            ->orderByRaw('u.USERS_PROFILE_PICTURE IS NULL')
+            ->orderBy('u.USERS_NAME')
+            ->limit(12)
+            ->get(['u.USERS_ID', 'u.USERS_NAME', 'u.USERS_PROFILE_PICTURE'])
+            ->map(function ($u) {
+                $u->logo = $u->USERS_PROFILE_PICTURE ? asset('storage/' . $u->USERS_PROFILE_PICTURE) : null;
+                return $u;
+            });
+
+        return view('customer.home', compact('newArrivals', 'bestSellers', 'brands'));
     }
 }

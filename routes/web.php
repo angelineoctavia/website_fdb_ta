@@ -11,6 +11,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CustomerOrderController;
 
 // 1. Akses awal langsung diarahkan ke Login
 Route::get('/', function () {
@@ -52,6 +53,10 @@ Route::middleware(['web', 'role:C'])->group(function () {
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/wishlist/{id}/to-cart', [WishlistController::class, 'toCart'])->name('wishlist.toCart');
     Route::delete('/wishlist/{id}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+
+    // View My Orders
+    Route::get('/my-orders', [CustomerOrderController::class, 'index'])->name('customer.orders');
+    Route::get('/my-orders/{id}', [CustomerOrderController::class, 'show'])->name('customer.orders.show');
 
     // Midtrans
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');

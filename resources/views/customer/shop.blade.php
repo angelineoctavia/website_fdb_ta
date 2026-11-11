@@ -64,6 +64,72 @@
             background: #fafafa
         }
 
+        /* ===== HEADER PROFIL SELLER (full-width, gaya Shopee) ===== */
+        .seller-head {
+            display: flex;
+            gap: 22px;
+            align-items: center;
+            background: #fff;
+            /* tembus padding .shop-content supaya melebar penuh */
+            margin: -28px -36px 0;
+            padding: 28px 36px 22px
+        }
+
+        .seller-avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: #d9d9d9;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 3px solid #f1f1f1
+        }
+
+        .seller-meta h1 {
+            font-size: 20px;
+            font-weight: 600
+        }
+
+        .seller-handle {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 2px 0 8px
+        }
+
+        .seller-bio {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #444;
+            white-space: pre-line;
+            max-width: 640px
+        }
+
+        .seller-head .seller-clear {
+            margin-left: auto;
+            align-self: flex-start;
+            color: var(--brand);
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        /* tab "Products" di bawah header */
+        .seller-tabs {
+            background: #fff;
+            margin: 0 -36px 24px;
+            padding: 0 36px;
+            border-bottom: 1px solid #eee
+        }
+
+        .seller-tab {
+            display: inline-block;
+            padding: 12px 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--brand);
+            border-bottom: 2px solid var(--brand);
+            margin-bottom: -1px
+        }
+
         .search-info {
             display: flex;
             justify-content: space-between;
@@ -183,6 +249,28 @@
             .shop-content {
                 padding: 18px
             }
+
+            .seller-head {
+                margin: -18px -18px 0;
+                padding: 20px 18px 18px
+            }
+
+            .seller-tabs {
+                margin: 0 -18px 18px;
+                padding: 0 18px
+            }
+        }
+
+        @media (max-width: 600px) {
+            .seller-head {
+                flex-direction: column;
+                text-align: center
+            }
+
+            .seller-head .seller-clear {
+                margin: 0;
+                align-self: center
+            }
         }
     </style>
 @endpush
@@ -246,8 +334,34 @@
             </form>
         </aside>
 
-        {{-- ===== GRID PRODUK ===== --}}
+        {{-- ===== PROFIL SELLER + GRID PRODUK ===== --}}
         <section class="shop-content">
+
+            @if (!empty($seller))
+                {{-- header seller dibuat paling atas & melebar penuh, jadi flash ditaruh di bawahnya --}}
+                <div class="seller-head">
+                    @if ($seller['picture'])
+                        <img class="seller-avatar" src="{{ $seller['picture'] }}" alt="{{ $seller['name'] }}">
+                    @else
+                        <div class="seller-avatar"></div>
+                    @endif
+
+                    <div class="seller-meta">
+                        <h1>{{ $seller['name'] }}</h1>
+                        <p class="seller-handle">{{ $seller['handle'] }}</p>
+                        @if ($seller['bio'])
+                            <p class="seller-bio">{{ $seller['bio'] }}</p>
+                        @endif
+                    </div>
+
+                    <a href="{{ route('shop.index') }}" class="seller-clear">See all brands</a>
+                </div>
+
+                <div class="seller-tabs">
+                    <span class="seller-tab">Products ({{ $seller['count'] }})</span>
+                </div>
+            @endif
+
             @include('components.flash')
 
             @if ($q !== '')
@@ -266,7 +380,7 @@
             @else
                 <div class="product-grid">
                     @foreach ($products as $p)
-                        {{-- 1 = Ready Stock, 2 = Pre-Order (accessor is_preorder di model Product) --}}
+                        {{-- is_preorder = accessor di model Product (PRODUCTS_READY_TYPE) --}}
                         @php $soldOut = !$p->is_preorder && (int) $p->PRODUCTS_STOCK <= 0; @endphp
                         <a href="{{ route('shop.show', $p->PRODUCTS_ID) }}" class="product-card">
                             <div class="product-thumb {{ $soldOut ? 'soldout' : '' }}">

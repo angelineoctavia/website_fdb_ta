@@ -312,7 +312,7 @@
     <div class="auth-container">
         <!-- Banner Kiri -->
         <div class="auth-left">
-            <img src="{{ asset('images/Background_Login.png') }}" alt="Register Fabric Banner"
+            <img src="{{ asset('images/New_BG.jpg') }}" alt="Register Fabric Banner"
                 onerror="this.src='https://via.placeholder.com/600x800?text=Fashion+Fabric+Image'">
         </div>
 
@@ -360,7 +360,7 @@
 
                     <div class="form-group">
                         <input type="tel" inputmode="tel" name="phone_number" class="form-control has-icon"
-                            placeholder="Phone Number Format (62XXXXXXXXXXX)" value="{{ old('phone_number') }}" required>
+                            placeholder="Phone Number Format (628XXXXXXXXXX)" value="{{ old('phone_number') }}" required>
                         <span class="field-icon"><i class="fa-solid fa-phone"></i></span>
                     </div>
 

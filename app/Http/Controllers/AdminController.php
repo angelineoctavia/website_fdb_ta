@@ -200,17 +200,17 @@ class AdminController extends Controller
         $wb = new Spreadsheet();
 
         // --- Sheet 1: Ringkasan ---
-        $ws = $wb->getActiveSheet()->setTitle('Ringkasan');
-        $ws->setCellValue('A1', 'Laporan Penjualan - Made By Pidiz');
+        $ws = $wb->getActiveSheet()->setTitle('Summary');
+        $ws->setCellValue('A1', 'Sales Report - Made By Pidiz');
         $ws->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $info = [
-            ['Periode', Carbon::parse($from)->format('d M Y') . ' s/d ' . Carbon::parse($to)->format('d M Y')],
-            ['Dibuat pada', now()->format('d M Y H:i')],
-            ['Total Revenue (uang masuk)', $gross],
-            ['Pendapatan Admin (' . (int) round($rate * 100) . '%)', $fee],
-            ['Hak Seller (' . (100 - (int) round($rate * 100)) . '%)', $gross - $fee],
-            ['Jumlah Order', $count],
-            ['Catatan', 'Hanya transaksi berstatus paid, packing, shipping, completed.'],
+            ['Period', Carbon::parse($from)->format('d M Y') . ' s/d ' . Carbon::parse($to)->format('d M Y')],
+            ['Generated at', now()->format('d M Y H:i')],
+            ['Total Revenue', $gross],
+            ['Admin Revenue (' . (int) round($rate * 100) . '%)', $fee],
+            ['Seller\'s Share (' . (100 - (int) round($rate * 100)) . '%)', $gross - $fee],
+            ['Total Orders', $count],
+            ['Notes', 'Includes transactions with status: paid, packing, shipping, completed.'],
         ];
         foreach ($info as $i => [$label, $val]) {
             $row = 3 + $i;
@@ -241,13 +241,13 @@ class AdminController extends Controller
                 $o->TRANSACTIONS_ORDER_STATUS,
             ]);
         $this->fillSheet(
-            $wb->createSheet()->setTitle('Transaksi'),
+            $wb->createSheet()->setTitle('Transactions'),
             [
-                'Tanggal',
+                'Date',
                 'Order ID',
                 'Customer',
                 'Seller',
-                'Produk',
+                'Product',
                 'Qty',
                 'Total',
                 'Admin ' . (int) round($rate * 100) . '%',
@@ -266,7 +266,7 @@ class AdminController extends Controller
         });
         $this->fillSheet(
             $wb->createSheet()->setTitle('Per Seller'),
-            ['Business', 'Jumlah Order', 'Revenue', 'Admin ' . (int) round($rate * 100) . '%', 'Hak Seller ' . (100 - (int) round($rate * 100)) . '%'],
+            ['Business', 'Order Quantity', 'Revenue', 'Admin ' . (int) round($rate * 100) . '%', 'Seller\'s Revenue ' . (100 - (int) round($rate * 100)) . '%'],
             $perSeller,
             ['C', 'D', 'E']
         );
@@ -302,13 +302,13 @@ class AdminController extends Controller
         $this->fillSheet(
             $wb->createSheet()->setTitle('Detail Item'),
             [
-                'Tanggal',
+                'Date',
                 'Order ID',
                 'Business',
-                'Produk',
-                'Ukuran',
+                'Product',
+                'Size',
                 'Qty',
-                'Harga Satuan',
+                'Unit Price',
                 'Subtotal',
                 'Admin ' . (int) round($rate * 100) . '%',
                 'Seller ' . (100 - (int) round($rate * 100)) . '%'
@@ -369,7 +369,7 @@ class AdminController extends Controller
         $id = ($last && preg_match('/^(\D*)(\d+)$/', $last, $m))
             ? $m[1] . str_pad((int) $m[2] + 1, strlen($m[2]), '0', STR_PAD_LEFT)
             : 'C001';
-        if (strlen($id) > 4) return back()->withErrors(['name' => 'ID kategori sudah melebihi 4 karakter.']);
+        if (strlen($id) > 4) return back()->withErrors(['name' => 'The category ID exceeds 4 characters.']);
 
         DB::table('categories')->insert([
             'CATEGORIES_ID' => $id,
@@ -378,7 +378,7 @@ class AdminController extends Controller
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        return back()->with('success', 'Kategori ditambahkan.');
+        return back()->with('success', 'Kategori added.');
     }
 
     public function categoryUpdate(Request $r, string $id)
@@ -391,7 +391,7 @@ class AdminController extends Controller
             ],
         ]);
         DB::table('categories')->where('CATEGORIES_ID', $id)->update(['CATEGORIES_NAME' => $d['name'], 'updated_at' => now()]);
-        return back()->with('success', 'Kategori diperbarui.');
+        return back()->with('success', 'Category updated.');
     }
 
     public function categoryDestroy(string $id)
@@ -399,10 +399,10 @@ class AdminController extends Controller
         // Soft delete saja: FK products -> categories bersifat cascade, hard delete akan menghapus produk.
         $used = DB::table('products')->where('CATEGORIES_ID', $id)->where('PRODUCTS_STATUS_DEL', 0)->count();
         if ($used > 0) {
-            return back()->withErrors(['name' => "Kategori masih dipakai $used produk aktif, tidak bisa dihapus."]);
+            return back()->withErrors(['name' => "Category is currently used by $used active product(s) and cannot be deleted."]);
         }
         DB::table('categories')->where('CATEGORIES_ID', $id)->update(['CATEGORIES_STATUS_DEL' => 1, 'updated_at' => now()]);
-        return back()->with('success', 'Kategori dihapus.');
+        return back()->with('success', 'Category removed.');
     }
 
     /* ===================== ORDERS (semua seller) ===================== */

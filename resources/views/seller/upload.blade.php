@@ -224,10 +224,10 @@
                         @endforeach
                     </select>
 
-                    <label class="sc-label">Gender</label>
+                    <label class="sc-label">Categories</label>
                     <select class="sc-input" name="gender" required>
                         <option value="">-- pilih --</option>
-                        @foreach (['Women', 'Men', 'Unisex'] as $g)
+                        @foreach (['Women', 'Men', 'Kids', 'Unisex'] as $g)
                             <option @selected(old('gender', $val('PRODUCTS_GENDER')) == $g)>{{ $g }}</option>
                         @endforeach
                     </select>
@@ -675,7 +675,7 @@
             };
             document.getElementById('uform').addEventListener('submit', () => {
                 document.getElementById('size_chart_json').value = JSON.stringify(
-                sc); // server mengabaikan kalau kosong
+                    sc); // server mengabaikan kalau kosong
             });
             render();
         })();
@@ -718,7 +718,7 @@
                 days.required = pre;
                 if (!pre) days.value = '';
                 hint.textContent = pre ?
-                    'Stok dikunci untuk Pre-Order. Produk Pre-Order tidak bisa masuk keranjang, hanya wishlist.' :
+                    'Stok tidak dipakai untuk Pre-Order. Customer bisa langsung memesan, dan bisa memilih ukuran custom.' :
                     'Stok berkurang otomatis saat customer checkout.';
             }
             type.addEventListener('change', applyType);

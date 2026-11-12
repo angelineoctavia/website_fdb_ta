@@ -18,14 +18,21 @@ class ShopController extends Controller
         'gt1000'   => ['> Rp 1.000.000', 1000000, null],
     ];
 
-    private const GENDERS = ['women' => 'Women', 'men' => 'Men', 'unisex' => 'Unisex'];
+    /** Dropdown "Category" di sidebar. Dicocokkan ke kolom products.PRODUCTS_GENDER (tidak peka huruf besar/kecil). */
+    private const CATEGORIES = [
+        'women'  => 'Women',
+        'men'    => 'Men',
+        'kids'   => 'Kids',
+        'unisex' => 'Unisex',
+    ];
 
     public function index(Request $request)
     {
         $q          = trim((string) $request->query('q', ''));
         $brand      = $request->query('brand');
-        $genders    = array_intersect((array) $request->query('gender', []), array_keys(self::GENDERS));
-        $categories = (array) $request->query('type', []);
+        $category   = strtolower((string) $request->query('category', ''));
+        $category   = array_key_exists($category, self::CATEGORIES) ? $category : '';
+        $types      = (array) $request->query('type', []);
         $prices     = array_intersect((array) $request->query('price', []), array_keys(self::PRICE_RANGES));
 
         $query = Product::active()->with('images');
@@ -48,12 +55,14 @@ class ShopController extends Controller
             $query->where('USERS_ID', $brand);
         }
 
-        if ($genders) {
-            $query->whereIn(DB::raw('LOWER(PRODUCTS_GENDER)'), $genders);
+        // Category (Women / Men / Kids / Unisex)
+        if ($category !== '') {
+            $query->whereRaw('LOWER(PRODUCTS_GENDER) = ?', [$category]);
         }
 
-        if ($categories) {
-            $query->whereIn('CATEGORIES_ID', $categories);
+        // Type (Tops, Dress, dll) = tabel categories
+        if ($types) {
+            $query->whereIn('CATEGORIES_ID', $types);
         }
 
         if ($prices) {
@@ -87,18 +96,18 @@ class ShopController extends Controller
         $seller = $brand ? $this->sellerProfile((string) $brand) : null;
 
         return view('customer.shop', [
-            'products'      => $products,
-            'brands'        => $brands,
-            'categoryList'  => $categoryList,
-            'genderOptions' => self::GENDERS,
-            'priceOptions'  => array_map(fn($r) => $r[0], self::PRICE_RANGES),
-            'q'             => $q,
-            'seller'        => $seller,
-            'selected'      => [
-                'brand'  => $brand,
-                'gender' => $genders,
-                'type'   => $categories,
-                'price'  => $prices,
+            'products'        => $products,
+            'brands'          => $brands,
+            'categoryList'    => $categoryList,        // checkbox "Type"
+            'categoryOptions' => self::CATEGORIES,     // dropdown "Category"
+            'priceOptions'    => array_map(fn($r) => $r[0], self::PRICE_RANGES),
+            'q'               => $q,
+            'seller'          => $seller,
+            'selected'        => [
+                'brand'    => $brand,
+                'category' => $category,
+                'type'     => $types,
+                'price'    => $prices,
             ],
         ]);
     }

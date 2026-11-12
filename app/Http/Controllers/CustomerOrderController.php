@@ -20,14 +20,14 @@ class CustomerOrderController extends Controller
 
     /** Label + keterangan + warna untuk tiap nilai TRANSACTIONS_ORDER_STATUS. */
     private const STATUS = [
-        'pending'   => ['label' => 'Waiting for Payment', 'desc' => 'Menunggu pembayaran kamu.',                       'class' => 'pending'],
-        'paid'      => ['label' => 'Paid',                'desc' => 'Pembayaran diterima. Menunggu diproses seller.',    'class' => 'paid'],
-        'packing'   => ['label' => 'Packing',             'desc' => 'Pesananmu sedang dikemas oleh seller.',             'class' => 'paid'],
-        'shipping'  => ['label' => 'In Shipping',         'desc' => 'Pesananmu sudah dikirim.',                          'class' => 'shipping'],
-        'completed' => ['label' => 'Completed',           'desc' => 'Pesanan selesai.',                                  'class' => 'completed'],
-        'cancelled' => ['label' => 'Cancelled',           'desc' => 'Pesanan dibatalkan.',                               'class' => 'failed'],
-        'expired'   => ['label' => 'Expired',             'desc' => 'Waktu pembayaran habis, pesanan dibatalkan.',       'class' => 'failed'],
-        'failed'    => ['label' => 'Failed',              'desc' => 'Pembayaran gagal.',                                 'class' => 'failed'],
+        'pending'   => ['label' => 'Waiting for Payment', 'desc' => 'Waiting for your payment.',                'class' => 'pending'],
+        'paid'      => ['label' => 'Paid',                'desc' => 'Payment received. Waiting for seller to process.', 'class' => 'paid'],
+        'packing'   => ['label' => 'Packing',             'desc' => 'Your order is being packed by the seller.',      'class' => 'paid'],
+        'shipping'  => ['label' => 'In Shipping',         'desc' => 'Your order has been shipped.',                   'class' => 'shipping'],
+        'completed' => ['label' => 'Completed',           'desc' => 'Order completed.',                               'class' => 'completed'],
+        'cancelled' => ['label' => 'Cancelled',           'desc' => 'Order cancelled.',                               'class' => 'failed'],
+        'expired'   => ['label' => 'Expired',             'desc' => 'Payment time expired, order cancelled.',         'class' => 'failed'],
+        'failed'    => ['label' => 'Failed',              'desc' => 'Payment failed.',                                'class' => 'failed'],
     ];
 
     /** Kelompok tab di halaman daftar. */
@@ -42,7 +42,7 @@ class CustomerOrderController extends Controller
 
     private function toLogin()
     {
-        return redirect()->route('login')->withErrors(['error' => 'Silakan login terlebih dahulu.']);
+        return redirect()->route('login')->withErrors(['error' => 'Please login to continue.']);
     }
 
     /** Item-item pesanan (termasuk produk yang sudah dinonaktifkan seller, supaya riwayat tetap utuh). */

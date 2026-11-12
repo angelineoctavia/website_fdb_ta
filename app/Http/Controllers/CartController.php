@@ -75,7 +75,7 @@ class CartController extends Controller
 
         if ($qty < 1) {
             $line->update(['CARTS_DETAILS_STATUS_DEL' => 1]);
-            return back()->with('success', 'Produk dihapus dari keranjang.');
+            return back()->with('success', 'Product successfully removed from cart.');
         }
 
         if (! $product->is_preorder && $qty > $product->PRODUCTS_STOCK) {

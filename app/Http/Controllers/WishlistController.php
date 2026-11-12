@@ -44,7 +44,7 @@ class WishlistController extends Controller
 
         if ($row && (int) $row->WISHLISTS_STATUS_DEL === 0) {
             $row->update(['WISHLISTS_STATUS_DEL' => 1]);
-            return back()->with('success', 'Dihapus dari wishlist.');
+            return back()->with('success', 'Removed from wishlist.');
         }
 
         if ($row) {
@@ -57,7 +57,7 @@ class WishlistController extends Controller
             ]);
         }
 
-        return back()->with('success', "{$product->PRODUCTS_NAME} ditambahkan ke wishlist.");
+        return back()->with('success', "{$product->PRODUCTS_NAME} added to wishlist.");
     }
 
     /** Wishlist -> Cart (item tetap ada di wishlist sampai di-delete). */
@@ -81,6 +81,6 @@ class WishlistController extends Controller
             ->where('USERS_ID', $this->uid())
             ->update(['WISHLISTS_STATUS_DEL' => 1]);
 
-        return back()->with('success', 'Dihapus dari wishlist.');
+        return back()->with('success', 'Removed from wishlist.');
     }
 }

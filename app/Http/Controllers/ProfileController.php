@@ -51,16 +51,16 @@ class ProfileController extends Controller
             'detail'      => ['nullable', 'string', 'max:255'],
             'label' => ['required', Rule::in(['Home', 'Office', 'Boarding House', 'Other'])],
         ], [
-            'username.unique'    => 'Username sudah dipakai.',
-            'province.in'        => 'Pilih provinsi dari daftar.',
-            'postal_code.digits' => 'Kode pos harus 5 digit angka.',
+            'username.unique'    => 'Username is already taken.',
+            'province.in'        => 'Select a province from the list.',
+            'postal_code.digits' => 'The postal code must be a 5-digit number.',
         ]);
 
         if (
             $data['province'] === 'Jawa Timur'
             && ! in_array($data['city'], $this->shipping->cityOptions(), true)
         ) {
-            return back()->withErrors(['city' => 'Pilih kota/kabupaten dari daftar.'])->withInput();
+            return back()->withErrors(['city' => 'Select a city/regency from the list.'])->withInput();
         }
 
         // simpan dalam format 628xxx (sama seperti saat register)
@@ -107,9 +107,9 @@ class ProfileController extends Controller
         session(['user_name' => $data['username']]);
 
         if ($request->input('next') === 'checkout') {
-            return redirect()->route('checkout.index')->with('success', 'Profil tersimpan. Lanjutkan checkout.');
+            return redirect()->route('checkout.index')->with('success', 'Profile saved, continue to checkout.');
         }
 
-        return redirect()->route('profile')->with('success', 'Profil berhasil disimpan.');
+        return redirect()->route('profile')->with('success', 'Profile successfully saved.');
     }
 }

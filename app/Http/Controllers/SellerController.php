@@ -134,7 +134,7 @@ class SellerController extends Controller
         $rules = [
             'name'            => 'required|max:100',
             'category'        => 'required|exists:categories,CATEGORIES_ID',
-            'gender'          => 'required|in:Women,Men,Unisex',
+            'gender'          => 'required|in:Women,Men,Unisex,Kids',
             'price'           => 'required|numeric|min:0',
             'ready_type'      => 'required|in:1,2',
             'stock'           => 'exclude_if:ready_type,2|required|integer|min:0',
@@ -245,7 +245,7 @@ class SellerController extends Controller
         }
         DB::table('transactions')->where('TRANSACTIONS_ID', $id)->update($upd);
 
-        return back()->with('success', 'Status pesanan diperbarui.');
+        return back()->with('success', 'Order status updated.');
     }
 
     /** Rapikan size chart dari form; kembalikan null kalau tidak ada baris yang terisi. */
@@ -272,7 +272,7 @@ class SellerController extends Controller
         return function ($attribute, $file, $fail) {
             $size = @getimagesize($file->getPathname());
             if (!$size || abs($size[0] / $size[1] - self::IMG_W / self::IMG_H) > 0.02) {
-                $fail('Rasio foto harus 3:4. Atur lewat tombol Crop / Stretch / Fit saat memilih foto.');
+                $fail('The photo ratio must be 3:4. Use Crop, Stretch, or Fit when choosing your photo.');
             }
         };
     }
@@ -421,7 +421,7 @@ class SellerController extends Controller
         $d = $r->validate([
             'brand'     => 'required|max:50',
             'whatsapp'  => ['nullable', 'max:20', function ($attribute, $value, $fail) {
-                if (!Phone::normalize($value)) $fail('Nomor WhatsApp tidak valid. Contoh: 081234567890.');
+                if (!Phone::normalize($value)) $fail('WhatsApp number not valid. Correct example: 6281234567890.');
             }],
             'instagram' => 'nullable|max:50',
             'address'   => 'nullable|string',
@@ -445,6 +445,6 @@ class SellerController extends Controller
         }
 
         DB::table('users')->where('USERS_ID', $this->sid())->update($upd);
-        return back()->with('success', 'Profil berhasil disimpan.');
+        return back()->with('success', 'Profile successfully updated.');
     }
 }

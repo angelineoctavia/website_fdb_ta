@@ -67,7 +67,7 @@ class CheckoutController extends Controller
         $data = $request->validate([
             'items'   => ['required', 'array', 'min:1'],
             'items.*' => ['integer'],
-        ], ['items.required' => 'Pilih minimal satu produk di keranjang.']);
+        ], ['items.required' => 'Choose minimal one product from the cart.']);
 
         session(['checkout_items' => array_values($data['items'])]);
 
@@ -80,13 +80,13 @@ class CheckoutController extends Controller
         $lines = $ids ? $this->lines($ids) : collect();
 
         if ($lines->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Pilih produk di keranjang dulu.');
+            return redirect()->route('cart.index')->with('error', 'Please choose a product from the cart.');
         }
 
         $address = Address::forUser($this->uid());
         if (! $address || ! $address->isComplete()) {
             return redirect()->route('profile', ['next' => 'checkout'])
-                ->with('error', 'Lengkapi alamat pengiriman dulu sebelum checkout.');
+                ->with('error', 'Please complete your address before checkout.');
         }
 
         $user   = DB::table('users')->where('USERS_ID', $this->uid())->first();
@@ -115,12 +115,12 @@ class CheckoutController extends Controller
             $result = DB::transaction(function () use ($ids) {
                 $lines = $ids ? $this->lines($ids) : collect();
                 if ($lines->isEmpty()) {
-                    throw new \RuntimeException('Keranjang kosong. Pilih produk dulu.');
+                    throw new \RuntimeException('Cart empty, please choose a product.');
                 }
 
                 $address = Address::forUser($this->uid());
                 if (! $address || ! $address->isComplete()) {
-                    throw new \RuntimeException('Alamat pengiriman belum lengkap.');
+                    throw new \RuntimeException('Shipping address is not yet complete.');
                 }
 
                 // Kunci produk, cek stok, kurangi stok (hanya ready stock)
@@ -187,7 +187,7 @@ class CheckoutController extends Controller
                 }
                 DB::table('transactions_details')->insert($details);
 
-                $items[] = ['id' => 'SHIPPING', 'price' => $sum['shipping'], 'quantity' => 1, 'name' => 'Ongkos kirim'];
+                $items[] = ['id' => 'SHIPPING', 'price' => $sum['shipping'], 'quantity' => 1, 'name' => 'Shipping Cost'];
 
                 // Barang di keranjang dianggap sudah dipesan
                 CartDetail::whereIn('CARTS_DETAILS_ID', $lines->pluck('CARTS_DETAILS_ID'))
@@ -223,7 +223,7 @@ class CheckoutController extends Controller
             report($e);
 
             return response()->json([
-                'message' => config('app.debug') ? $e->getMessage() : 'Gagal membuat pembayaran. Coba lagi.',
+                'message' => config('app.debug') ? $e->getMessage() : 'Failed to make payment, please try again.',
             ], 500);
         }
 
@@ -240,7 +240,7 @@ class CheckoutController extends Controller
         abort_if(! $order, 404);
 
         if ($order->TRANSACTIONS_ORDER_STATUS !== 'pending' || ! $order->TRANSACTIONS_SNAP_TOKEN) {
-            return redirect()->route('home')->with('info', 'Pesanan ini sudah tidak menunggu pembayaran.');
+            return redirect()->route('home')->with('info', 'This order is no longer awaiting payment.');
         }
 
         return view('customer.pay', ['order' => $order]);
@@ -267,9 +267,9 @@ class CheckoutController extends Controller
         }
 
         return match ($status) {
-            'paid'      => redirect()->route('home')->with('success', 'Pembayaran berhasil! Pesananmu akan segera diproses oleh seller.'),
-            'cancelled' => redirect()->route('home')->with('error', 'Pembayaran gagal atau kedaluwarsa. Stok dikembalikan.'),
-            default     => redirect()->route('home')->with('info', 'Pesanan dibuat dan menunggu pembayaran. Status akan otomatis diperbarui setelah pembayaran masuk.'),
+            'paid'      => redirect()->route('home')->with('success', 'Payment successful! Your order will be processed by the seller shortly.'),
+            'cancelled' => redirect()->route('home')->with('error', 'Payment failed or expired. Stock has been returned.'),
+            default     => redirect()->route('home')->with('info', 'The order has been created and is awaiting payment. The status will be updated automatically once the payment is received.'),
         };
     }
 }

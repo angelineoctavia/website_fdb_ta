@@ -202,17 +202,4 @@
         }
     }
 </style>
-@if (session('success'))
-    <div class="sc-wrap" style="margin-bottom:0">
-        <div class="sc-alert sc-ok">{{ session('success') }}</div>
-    </div>
-@endif
-@if ($errors->any())
-    <div class="sc-wrap" style="margin-bottom:0">
-        <div class="sc-alert sc-err">
-            @foreach ($errors->all() as $e)
-                <div>{{ $e }}</div>
-            @endforeach
-        </div>
-    </div>
-@endif
+@include('components.flash', ['wrap' => true])

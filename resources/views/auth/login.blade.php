@@ -310,7 +310,7 @@
     <div class="auth-container">
         <!-- Banner Kiri -->
         <div class="auth-left">
-            <img src="{{ asset('images/Background_Login.png') }}" alt="Login Fabric Banner"
+            <img src="{{ asset('images/New_BG.jpg') }}" alt="Login Fabric Banner"
                 onerror="this.src='https://via.placeholder.com/600x800?text=Fashion+Fabric+Image'">
         </div>
 

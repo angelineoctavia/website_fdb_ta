@@ -298,14 +298,15 @@
                 </div>
 
                 <div class="filter-group">
-                    <span class="filter-title">Gender</span>
-                    @foreach ($genderOptions as $value => $label)
-                        <label class="filter-check">
-                            <input type="checkbox" name="gender[]" value="{{ $value }}" @checked(in_array($value, $selected['gender']))
-                                onchange="this.form.submit()">
-                            {{ $label }}
-                        </label>
-                    @endforeach
+                    <label class="filter-title" for="category-filter">Category</label>
+                    <select name="category" id="category-filter" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        @foreach ($categoryOptions as $value => $label)
+                            <option value="{{ $value }}" @selected($selected['category'] === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="filter-group">
